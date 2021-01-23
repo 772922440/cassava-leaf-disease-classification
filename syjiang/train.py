@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd 
 
 from dataset.leafdisease import CLDDataset
-from model.resnet import CustomResNext
+from model.resnet import CustomResNext50 , CustomResNext18
 import torch.utils.data as data
 import torchvision.transforms as transforms 
 import torch
@@ -19,14 +19,14 @@ from utils.utils import save_checkpoint, load_checkpoint
 def train(args, train_loader, valid_loader):
 
 
-    model = CustomResNext().to(args.device)
+    model = CustomResNext50().to(args.device)
 
     pos_weight = torch.tensor([19.68, 9.77, 8.96, 1.63 , 8.30])
 
     # loss_f = nn.BCEWithLogitsLoss(pos_weight=pos_weight).to(args.device)
 
     loss_f = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), args.lr)
+    optimizer = optim.AdamW(model.parameters(), args.lr)
 
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(
                             optimizer, T_max=15, 
@@ -110,7 +110,7 @@ def train(args, train_loader, valid_loader):
                 print('Make File Successfully')
             best_acc = acc
 
-            save_checkpoint(f'{args.checkpoints}/bestmodel.pth' , model, optimizer)
+            save_checkpoint(f'{args.checkpoints}/bestmodel_50.pth' , model, optimizer)
 
 
 
@@ -128,6 +128,7 @@ if __name__=='__main__':
     valid_set_size = len(dataset) - train_set_size
     
     train_set, valid_set = data.random_split(dataset, [train_set_size, valid_set_size])
+
 
     train_loader = DataLoader(train_set,
                               batch_size=args.bsize,
