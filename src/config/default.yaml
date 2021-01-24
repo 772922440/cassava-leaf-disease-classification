@@ -1,10 +1,20 @@
+# train data
 train_csv: "../Data/train.csv"
-train_dirs: "../Data/train_images/"
-bsize: 32
+train_images: "../Data/train_images/"
+target_size: 5
+target_col: 'label'
+
+# save models
+checkpoints: "../checkpoints"
+best_model: "bestmodel.pth"
+device: "cuda"
+
+# hyperparameters
+batch_size: 32
 epochs: 50
-device: "cuda:0"
+image_size: 512
 lr: 2e-4
 eta_min: 2e-5
 weight_decay: 1e-4
-checkpoints: "../checkpoints"
-model_path: "bestmodel.pth"
+seed: 2020
+num_workers: 8

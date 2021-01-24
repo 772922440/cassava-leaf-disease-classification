@@ -1,0 +1,8 @@
+k_folds: 5
+backbone: "efficientnet_b4"
+model_path: 
+  - "efficientnet_b4_0"
+  - "efficientnet_b4_0"
+  - "efficientnet_b4_1"
+  - "efficientnet_b4_2"
+  - "efficientnet_b4_3"

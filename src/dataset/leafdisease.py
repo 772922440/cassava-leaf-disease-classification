@@ -12,8 +12,6 @@ from torchvision import datasets
 from PIL import Image, ImageOps
 
 
-
-
 # @staticmethod 
 def get_transform(ch=1):
     train_trans = transforms.Compose([
