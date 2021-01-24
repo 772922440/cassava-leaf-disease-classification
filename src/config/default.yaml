@@ -21,4 +21,4 @@ lr: 2e-4
 eta_min: 2e-5
 weight_decay: 1e-4
 seed: 2020
-num_workers: 8
+num_workers: 4

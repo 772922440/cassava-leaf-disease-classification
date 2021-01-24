@@ -7,6 +7,7 @@ from logging import getLogger, INFO, FileHandler,  Formatter,  StreamHandler
 import re
 import os
 
+# support 1e-4
 loader = yaml.SafeLoader
 loader.add_implicit_resolver(
     u'tag:yaml.org,2002:float',
@@ -19,6 +20,7 @@ loader.add_implicit_resolver(
     |\\.(?:nan|NaN|NAN))$''', re.X),
     list(u'-+0123456789.'))
 
+# access dict by obj.xxx
 class DotDict(dict):
     """
     a.b.c
@@ -95,7 +97,7 @@ def parse_command(params):
         result[key] = val
     return result
     
-# read default.yaml your_config.yaml command key vals
+# read default.yam, your_config.yaml and command line key+vals
 def read_all_config(params = None):
     if params is None:
         params = sys.argv[1:]
@@ -116,6 +118,7 @@ def read_all_config(params = None):
     return config
 
 
+# init logger
 def get_logger(config):
     logger = getLogger(config.config_name)
     logger.setLevel(INFO)

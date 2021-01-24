@@ -41,7 +41,11 @@ import timm
 import warnings 
 warnings.filterwarnings('ignore')
 
+# our codes
 from utils import utils, torch_utils
+from dataset import leafdisease as ld
+from model import resnet
+
 
 # read config
 config = utils.read_all_config()
@@ -57,127 +61,23 @@ def timer(name):
     logger.info(f'[{name}] done in {time.time() - t0:.0f} s.')
 
 # transform
-transforms_valid = albumentations.Compose([
-    albumentations.CenterCrop(config.image_size, config.image_size, p=1),
-    albumentations.Resize(config.image_size, config.image_size),
-    albumentations.Normalize()
+transforms = A.Compose([
+    A.CenterCrop(config.image_size, config.image_size, p=1),
+    A.Resize(config.image_size, config.image_size),
+    A.Normalize(),
+    ToTensorV2()
 ])
 
 
+# test data
 test = pd.read_csv(config.test_csv)
 test['filepath'] = test.image_id.apply(lambda x: os.path.join(config.test_images, f'{x}'))
+test_dataset = ld.CLDDataset(test, 'test', transform=transforms)
+test_loader = torch.utils.data.DataLoader(
+    test_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
 
-class TestDataset(Dataset):
-    def __init__(self, df, transform=None):
-        self.df = df
-        self.file_names = df['image_id'].values
-        self.transform = transform
-        
-    def __len__(self):
-        return len(self.df)
-
-    def __getitem__(self, idx):
-        file_name = self.file_names[idx]
-        file_path = f'{TEST_PATH}/{file_name}'
-        image = cv2.imread(file_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        if self.transform:
-            augmented = self.transform(image=image)
-            image = augmented['image']
-        return image
-
-# ====================================================
-# Dataset for efficientnet
-# ====================================================
-class CLDDataset(Dataset):
-    def __init__(self, df, mode, transform=None):
-        self.df = df.reset_index(drop=True)
-        self.mode = mode
-        self.transform = transform
-        
-    def __len__(self):
-        return len(self.df)
-    
-    def __getitem__(self, index):
-        row = self.df.loc[index]
-        image = cv2.imread(row.filepath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
-        if self.transform is not None:
-            res = self.transform(image=image)
-            image = res['image']
-        
-        image = image.astype(np.float32)
-        image = image.transpose(2,0,1)
-        if self.mode == 'test':
-            return torch.tensor(image).float()
-        else:
-            return torch.tensor(image).float(), torch.tensor(row.label).float()
-
-
-#for efficientnet
-test_dataset_efficient = CLDDataset(test, 'test', transform=transforms_valid)
-test_loader_efficient = torch.utils.data.DataLoader(test_dataset_efficient, batch_size=BATCH_SIZE, shuffle=False,  num_workers=4)
-
-# ====================================================
-# Transforms for Resnext
-# ====================================================
-def get_transforms(*, data):
-    if data == 'valid':
-        return A.Compose([
-            A.Resize(CFG.size, CFG.size),
-            A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-            ToTensorV2(),
-        ])
-
-# ====================================================
-# ResNext Model
-# ====================================================
-class CustomResNext(nn.Module):
-    def __init__(self, model_name='resnext50_32x4d', pretrained=False):
-        super().__init__()
-        self.model = timm.create_model(model_name, pretrained=pretrained)
-        n_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(n_features, CFG.target_size)
-
-    def forward(self, x):
-        x = self.model(x)
-        return x
-
-# ====================================================
-# EfficientNet Model
-# ====================================================
-class enet_v2(nn.Module):
-
-    def __init__(self, backbone, out_dim, pretrained=False):
-        super(enet_v2, self).__init__()
-        self.enet = timm.create_model(backbone, pretrained=pretrained)
-        in_ch = self.enet.classifier.in_features
-        self.myfc = nn.Linear(in_ch, out_dim)
-        self.enet.classifier = nn.Identity()
-
-    def forward(self, x):
-        x = self.enet(x)
-        x = self.myfc(x)
-        return x
-
-
-# ====================================================
-# Helper functions for Resnext
-# ====================================================
-def load_state(model_path):
-    model = CustomResNext(CFG.model_name, pretrained=False)
-    try:  # single GPU model_file
-        model.load_state_dict(torch.load(model_path)['model'], strict=True)
-        state_dict = torch.load(model_path)['model']
-    except:  # multi GPU model_file
-        state_dict = torch.load(model_path)['model']
-        state_dict = {k[7:] if k.startswith('module.') else k: state_dict[k] for k in state_dict.keys()}
-
-    return state_dict
+# load model
+model = resnet.CustomResNext50(target_size=config.target_size)
 
 
 def inference(model, states, test_loader, device):
