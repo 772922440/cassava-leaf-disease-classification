@@ -2,8 +2,6 @@
 # Library
 # ====================================================
 import sys
-sys.path.append('../input/pytorch-image-models/pytorch-image-models-master')
-
 import os
 import math
 import time
@@ -45,6 +43,10 @@ import timm
 
 import warnings 
 warnings.filterwarnings('ignore')
+
+from utils import utils
+
+
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

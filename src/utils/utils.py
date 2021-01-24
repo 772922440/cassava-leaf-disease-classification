@@ -1,21 +1,6 @@
-import torch 
 import yaml
 import os.path as path
 import collections
-
-def save_checkpoint(checkpoint_path, model, optimizer):
-    state = {'state_dict': model.state_dict(),
-             'optimizer' : optimizer.state_dict()}
-    torch.save(state, checkpoint_path)
-    print('model saved to %s' % checkpoint_path)
-    
-
-def load_checkpoint(checkpoint_path, model, optimizer):
-    state = torch.load(checkpoint_path)
-    model.load_state_dict(state['state_dict'])
-    optimizer.load_state_dict(state['optimizer'])
-    print('model loaded from %s' % checkpoint_path)
-
 
 # for combining config dict
 def recursive_dict_update(d, u):
