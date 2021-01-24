@@ -14,6 +14,8 @@ from torch.utils.data import Dataset, DataLoader
 
 import os 
 from utils.utils import save_checkpoint, load_checkpoint
+import pickle
+
 
 
 def train(args, train_loader, valid_loader):
@@ -23,14 +25,13 @@ def train(args, train_loader, valid_loader):
 
     pos_weight = torch.tensor([19.68, 9.77, 8.96, 1.63 , 8.30])
 
-    # loss_f = nn.BCEWithLogitsLoss(pos_weight=pos_weight).to(args.device)
-
     loss_f = nn.CrossEntropyLoss()
     optimizer = optim.AdamW(model.parameters(), args.lr)
 
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(
                             optimizer, T_max=15, 
                             eta_min=args.eta_min, last_epoch=-1)
+
     best_acc = 0
 
     if os.path.exists(args.checkpoints):
@@ -53,7 +54,6 @@ def train(args, train_loader, valid_loader):
             lbls = lbls.long()
             preds = model(imgs)            
             pred = preds.max(1, keepdim=True)[1] 
-            # print(pred)
 
             loss = loss_f(preds, lbls)
             train_loss += loss
@@ -69,11 +69,11 @@ def train(args, train_loader, valid_loader):
             print('\t Train Epoch: {} [ {}/{} ({:.0f}%) ] \t Loss: {:.4f}'.format(
                     epoch, idx * len(imgs), len(train_loader.dataset),
                     100. * idx / len(train_loader), loss.item()), end= '            \r')
-            if idx > 10 :
-                break
+
         print()
 
         train_acc = correct / len(train_loader.dataset)
+        train_loss /= len(train_loader.dataset)
         
         model.eval()
 
@@ -120,22 +120,46 @@ if __name__=='__main__':
     args = parse_args()
     
     torch.manual_seed(2020)
-
+    np.random.seed(2020)
+    
     df = pd.read_csv(args.train_csv)
-    dataset = CLDDataset(df, dirs=args.train_dirs, mode = 'train')
     
-    train_set_size = int(len(dataset) * 0.8)
-    valid_set_size = len(dataset) - train_set_size
+    # Split into train df and test df and save pickle
+
+    if args.SplitFlag:
+
+        dirs = list(df.image_id)
+        np.random.shuffle(dirs)
+        split = int(len(dirs) * 0.9)
+        train_dirs, valid_dirs = dirs[:split], dirs[split:]
     
-    train_set, valid_set = data.random_split(dataset, [train_set_size, valid_set_size])
+        with open(args.train_set_pickle, "wb") as f:
+            pickle.dump(train_dirs, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(args.valid_set_pickle, "wb") as f:
+            pickle.dump(valid_dirs, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        print("\t[Info] dump train valid set")
+
+    else :
+        with open('args.train_set_pickle', 'r') as f:
+            train_dirs = pickle.load(f)
+        with open('args.valid_set_pickle', 'r') as f:
+            valid_dirs = pickle.load(f)
 
 
-    train_loader = DataLoader(train_set,
+    df_set_index = df.set_index('image_id', drop = True)    
+    
+    df_train , df_val = df_set_index.loc[train_dirs].reset_index(), df_set_index.loc[valid_dirs].reset_index()
+
+    train_dataset = CLDDataset(df_train, dirs=args.train_dirs, mode = 'train')
+    valid_dataset = CLDDataset(df_val, dirs=args.train_dirs, mode = 'valid')
+
+    train_loader = DataLoader(train_dataset,
                               batch_size=args.bsize,
                               num_workers=6,
                               shuffle=True)
 
-    valid_loader = DataLoader(valid_set,
+    valid_loader = DataLoader(valid_dataset,
                               batch_size=args.bsize,
                               num_workers=6)
 

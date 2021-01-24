@@ -25,6 +25,16 @@ def parse_args(string=None):
     parser.add_argument('--model_path', type=str, default='./checkpoints/bestmodel.pth',
                         help='modelpath')
 
+    parser.add_argument('--SplitFlag', type=bool, default=False,
+                        help='Split Data or not')
+
+
+    parser.add_argument('--train_set_pickle', type=str, default='./train_set.pkl',
+                        help='Train set pickle')
+
+    parser.add_argument('--valid_set_pickle', type=str, default='./valid_set.pkl',
+                        help='Vilid set pickle')
+
     if string is not None: args = parser.parse_args(string)  
     else: args = parser.parse_args()
 
