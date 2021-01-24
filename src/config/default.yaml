@@ -4,16 +4,16 @@ train_images: "../data/train_images/"
 
 test_csv: "../data/test.csv"
 test_images: "../data/test_images/"
+
+# predict csv path
 output_dir: "../result"
 
-target_size: 5
-target_col: 'label'
-
 # save models
-checkpoints: "../checkpoints"
-best_model: "best_model.pth"
+model_base_path: '../models/'
+best_model_suffix: "best.pth"
 
 # hyperparameters
+target_size: 5 # network output size
 batch_size: 32
 epochs: 50
 image_size: 512

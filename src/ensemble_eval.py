@@ -44,8 +44,7 @@ warnings.filterwarnings('ignore')
 # our codes
 from utils import utils, torch_utils
 from dataset import leafdisease as ld
-from model import resnet
-
+from model import REGISTRY as MODEL_FACTORY
 
 # read config
 config = utils.read_all_config()
@@ -76,94 +75,37 @@ test_dataset = ld.CLDDataset(test, 'test', transform=transforms)
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
 
-# load model
-model = resnet.CustomResNext50(target_size=config.target_size)
 
-
-def inference(model, states, test_loader, device):
-    model.to(device)
+def inference(model_list, test_loader, device):
     tk0 = tqdm(enumerate(test_loader), total=len(test_loader))
     probs = []
     for i, (images) in tk0:
         images = images.to(device)
         avg_preds = []
-        for state in states:
-            model.load_state_dict(state)
+
+        # load models
+        for m in range(config.model_list):
+            backbone = m['backbone']
+            model = MODEL_FACTORY[backbone](target_size=config.target_size)
             model.eval()
-            with torch.no_grad():
-                y_preds = model(images)
-            avg_preds.append(y_preds.softmax(1).to('cpu').numpy())
-        avg_preds = np.mean(avg_preds, axis=0)
+
+            for filename in m['filename']:
+                model_path = os.path.join(config.model_base_path, backbone, filename)
+                model.load_state_dict(torch.load(model_path))
+
+                with torch.no_grad():
+                    y_preds = model(images)
+                avg_preds.append(y_preds.softmax(1).to('cpu'))
+
+        # simple mean weights
+        avg_preds = torch.mean(avg_preds, dim=0)
         probs.append(avg_preds)
-    probs = np.concatenate(probs)
+
+    probs = torch.cat(probs, dim=0)
     return probs
 
-# ====================================================
-# Helper functions for efficientnet
-# ====================================================
-def inference_func(test_loader):
-    model.eval()
-    bar = tqdm(test_loader)
-
-    LOGITS = []
-    PREDS = []
-    
-    with torch.no_grad():
-        for batch_idx, images in enumerate(bar):
-            x = images.to(device)
-            logits = model(x)
-            LOGITS.append(logits.cpu())
-            PREDS += [torch.softmax(logits, 1).detach().cpu()]
-        PREDS = torch.cat(PREDS).cpu().numpy()
-        LOGITS = torch.cat(LOGITS).cpu().numpy()
-    return PREDS
-
-def tta_inference_func(test_loader):
-    model.eval()
-    bar = tqdm(test_loader)
-    PREDS = []
-    LOGITS = []
-
-    with torch.no_grad():
-        for batch_idx, images in enumerate(bar):
-            x = images.to(device)
-            x = torch.stack([x,x.flip(-1),x.flip(-2),x.flip(-1,-2),
-            x.transpose(-1,-2),x.transpose(-1,-2).flip(-1),
-            x.transpose(-1,-2).flip(-2),x.transpose(-1,-2).flip(-1,-2)],0)
-            x = x.view(-1, 3, image_size, image_size)
-            logits = model(x)
-            logits = logits.view(BATCH_SIZE, 8, -1).mean(1)
-            PREDS += [torch.softmax(logits, 1).detach().cpu()]
-            LOGITS.append(logits.cpu())
-
-        PREDS = torch.cat(PREDS).cpu().numpy()
-        
-    return PREDS
-
-
-# ====================================================
-# inference
-# ====================================================
-
-#for Resnext
-model = CustomResNext(CFG.model_name, pretrained=False)
-#model = enet_v2(enet_type[i], out_dim=5)
-states = [load_state(MODEL_DIR+f'{CFG.model_name}_fold{fold}.pth') for fold in CFG.trn_fold]
-test_dataset = TestDataset(test, transform=get_transforms(data='valid'))
-test_loader = DataLoader(test_dataset, batch_size=CFG.batch_size, shuffle=False, 
-                         num_workers=CFG.num_workers, pin_memory=True)
-predictions = inference(model, states, test_loader, device)
-
-#for Efficientnet
-test_preds = []
-for i in range(len(enet_type)):
-    model = enet_v2(enet_type[i], out_dim=5)
-    model = model.to(device)
-    model.load_state_dict(torch.load(model_path[i]))
-    test_preds += [tta_inference_func(test_loader_efficient)]
-
-# submission
-pred = 0.5*predictions + 0.5*np.mean(test_preds, axis=0)
-test['label'] = softmax(pred).argmax(1)
-test[['image_id', 'label']].to_csv(OUTPUT_DIR+'submission.csv', index=False)
+# predict
+probs = inference(config.model_list, test_loader, config.device)
+test['label'] = torch.argmax(probs, dim=-1).numpy()
+test[['image_id', 'label']].to_csv(os.path.join(config.output_dir, 'submission.csv'), index=False)
 test.head()
