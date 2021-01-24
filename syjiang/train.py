@@ -139,16 +139,16 @@ if __name__=='__main__':
             pickle.dump(valid_dirs, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         print("\t[Info] dump train valid set")
-
     else :
-        with open('args.train_set_pickle', 'r') as f:
+
+        with open(args.train_set_pickle, 'rb') as f:
             train_dirs = pickle.load(f)
-        with open('args.valid_set_pickle', 'r') as f:
+        with open(args.valid_set_pickle, 'rb') as f:
             valid_dirs = pickle.load(f)
 
 
     df_set_index = df.set_index('image_id', drop = True)    
-    
+
     df_train , df_val = df_set_index.loc[train_dirs].reset_index(), df_set_index.loc[valid_dirs].reset_index()
 
     train_dataset = CLDDataset(df_train, dirs=args.train_dirs, mode = 'train')
