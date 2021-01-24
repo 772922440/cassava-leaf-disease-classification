@@ -52,10 +52,6 @@ class CLDDataset(Dataset):
         
         row = self.df.loc[index]
 
-        # print(os.path.join(self.dirs, row.image_id))
-        # image = cv2.imread(os.path.join(self.dirs, row.image_id) ) 
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
         image = Image.open(os.path.join(self.dirs, row.image_id) )
         if self.mode == 'train':
             image = self.train_trans(image)
