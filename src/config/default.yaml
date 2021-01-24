@@ -1,13 +1,17 @@
-# train data
-train_csv: "../Data/train.csv"
-train_images: "../Data/train_images/"
+# data
+train_csv: "../data/train.csv"
+train_images: "../data/train_images/"
+
+test_csv: "../data/test.csv"
+test_images: "../data/test_images/"
+output_dir: "../result"
+
 target_size: 5
 target_col: 'label'
 
 # save models
 checkpoints: "../checkpoints"
-best_model: "bestmodel.pth"
-device: "cuda"
+best_model: "best_model.pth"
 
 # hyperparameters
 batch_size: 32

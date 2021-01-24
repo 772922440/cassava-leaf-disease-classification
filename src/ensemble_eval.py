@@ -1,6 +1,3 @@
-# ====================================================
-# Library
-# ====================================================
 import sys
 import os
 import math
@@ -44,96 +41,32 @@ import timm
 import warnings 
 warnings.filterwarnings('ignore')
 
-from utils import utils
+from utils import utils, torch_utils
 
-
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-#Transform for efficientnet
-transforms_valid = albumentations.Compose([
-    albumentations.CenterCrop(image_size, image_size, p=1),
-    albumentations.Resize(image_size, image_size),
-    albumentations.Normalize()
-])
-
-# ====================================================
-# Directory settings for Resnext
-# ====================================================
-import os
-
-OUTPUT_DIR = './'
-MODEL_DIR = '../input/cassava-models-res/'
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
-    
-TRAIN_PATH = '../input/cassava-leaf-disease-classification/train_images'
-TEST_PATH = '../input/cassava-leaf-disease-classification/test_images'
-
-# ====================================================
-# CFG for Resnext
-# ====================================================
-class CFG:
-    debug=False
-    num_workers=8
-    model_name='resnext50_32x4d'
-    size=512
-    batch_size=32
-    seed=2020
-    target_size=5
-    target_col='label'
-    n_fold=5
-    trn_fold=[0, 1, 2, 3, 4]
-    inference=True
-
-
-# ====================================================
-# Utils for Resnext
-# ====================================================
-def get_score(y_true, y_pred):
-    return accuracy_score(y_true, y_pred)
-
+# read config
+config = utils.read_all_config()
+logger = utils.get_logger(config)
+utils.mkdir(config.output_dir)
+torch_utils.seed_torch(seed=config.seed)
 
 @contextmanager
 def timer(name):
     t0 = time.time()
-    LOGGER.info(f'[{name}] start')
+    logger.info(f'[{name}] start')
     yield
-    LOGGER.info(f'[{name}] done in {time.time() - t0:.0f} s.')
+    logger.info(f'[{name}] done in {time.time() - t0:.0f} s.')
+
+# transform
+transforms_valid = albumentations.Compose([
+    albumentations.CenterCrop(config.image_size, config.image_size, p=1),
+    albumentations.Resize(config.image_size, config.image_size),
+    albumentations.Normalize()
+])
 
 
-def init_logger(log_file=OUTPUT_DIR+'inference.log'):
-    from logging import getLogger, INFO, FileHandler,  Formatter,  StreamHandler
-    logger = getLogger(__name__)
-    logger.setLevel(INFO)
-    handler1 = StreamHandler()
-    handler1.setFormatter(Formatter("%(message)s"))
-    handler2 = FileHandler(filename=log_file)
-    handler2.setFormatter(Formatter("%(message)s"))
-    logger.addHandler(handler1)
-    logger.addHandler(handler2)
-    return logger
+test = pd.read_csv(config.test_csv)
+test['filepath'] = test.image_id.apply(lambda x: os.path.join(config.test_images, f'{x}'))
 
-#LOGGER = init_logger()
-
-def seed_torch(seed=42):
-    random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-
-seed_torch(seed=CFG.seed)
-
-
-test = pd.read_csv('../input/cassava-leaf-disease-classification/sample_submission.csv')
-test['filepath'] = test.image_id.apply(lambda x: os.path.join('../input/cassava-leaf-disease-classification/test_images', f'{x}'))
-#test.head()
-
-# ====================================================
-# Dataset for Resnext
-# ====================================================
 class TestDataset(Dataset):
     def __init__(self, df, transform=None):
         self.df = df
@@ -181,9 +114,6 @@ class CLDDataset(Dataset):
         else:
             return torch.tensor(image).float(), torch.tensor(row.label).float()
 
-#test = pd.read_csv('../input/cassava-leaf-disease-classification/sample_submission.csv')
-#test_dataset = CLDDataset(test, 'test', transform=transforms_valid)
-#test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False,  num_workers=4)
 
 #for efficientnet
 test_dataset_efficient = CLDDataset(test, 'test', transform=transforms_valid)

@@ -1,5 +1,6 @@
 import sys
 import utils.utils as utils
+import yaml
 
-d = utils.read_all_config(sys.argv[1:])
+d = utils.read_all_config()
 print(d)
