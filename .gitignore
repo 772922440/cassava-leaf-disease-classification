@@ -1,3 +1,6 @@
 Data/*
 sy/checkpoints/*
 Data.zip
+*.pyc
+*.zip
+__pycache__

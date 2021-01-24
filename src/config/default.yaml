@@ -1,0 +1,10 @@
+train_csv: "../Data/train.csv"
+train_dirs: "../Data/train_images/"
+bsize: 32
+epochs: 50
+device: "cuda:0"
+lr: 2e-4
+eta_min: 2e-5
+weight_decay: 1e-4
+checkpoints: "../checkpoints"
+model_path: "bestmodel.pth"
