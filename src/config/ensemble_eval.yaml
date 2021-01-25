@@ -6,7 +6,7 @@ ensemble_method: 'mean'
 
 # models list
 model_list: 
-  - backbone: 'resnext50_32x4d'
+  - backbone: 'mobilenetv3_large_100'
     filename:
       - 'fold0_best.pth'
       - 'fold1_best.pth'

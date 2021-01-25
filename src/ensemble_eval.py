@@ -39,7 +39,7 @@ def inference(model_list, test_loader, device):
         avg_preds = []
 
         # load models
-        for m in range(config.model_list):
+        for m in config.model_list:
             backbone = m['backbone']
             model = get_backbone(backbone, config).to(device=config.device)
             model.eval()
@@ -53,7 +53,7 @@ def inference(model_list, test_loader, device):
                 avg_preds.append(y_preds.softmax(dim=-1).to('cpu'))
 
         # simple mean weights
-        avg_preds = torch.mean(avg_preds, dim=0)
+        avg_preds = torch.mean(torch.stack(avg_preds), dim=0)
         probs.append(avg_preds)
 
     probs = torch.cat(probs, dim=0)
