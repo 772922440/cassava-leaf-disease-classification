@@ -35,10 +35,14 @@ def get_transform(image_size):
 
 def get_albu_transform(image_size):
     transform = A.Compose([
-                A.Resize(image_size, image_size),
+                A.Resize(512,512),
                 A.RandomRotate90(),
+                A.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
                 A.Flip(),
-                A.RandomCrop(width=image_size, height=image_size),
+                A.RandomCrop(width=512, height=512),
                 A.HorizontalFlip(p=0.5),
                 A.RandomBrightnessContrast(p=0.2),
                 A.OneOf([
