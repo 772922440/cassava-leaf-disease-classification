@@ -33,6 +33,44 @@ def get_transform(image_size):
             ])
     return train_trans, test_trans
 
+def get_albu_transform(image_size):
+    transform = A.Compose([
+                A.Resize(image_size, image_size),
+                A.RandomRotate90(),
+                A.Flip(),
+                A.RandomCrop(width=image_size, height=image_size),
+                A.HorizontalFlip(p=0.5),
+                A.RandomBrightnessContrast(p=0.2),
+                A.OneOf([
+                    A.IAAAdditiveGaussianNoise(),
+                    A.GaussNoise(),
+                    ], p=0.2),
+                
+                A.OneOf([
+                    A.MotionBlur(p=.2),
+                    A.MedianBlur(blur_limit=3, p=0.1),
+                    A.Blur(blur_limit=3, p=0.1),
+                    ], p=0.2),
+                A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+                A.OneOf([
+                    A.OpticalDistortion(p=0.3),
+                    A.GridDistortion(p=.1),
+                    A.IAAPiecewiseAffine(p=0.3),
+                    ], p=0.2),
+
+                A.OneOf([
+                    A.CLAHE(clip_limit=2),
+                    A.IAASharpen(),
+                    A.IAAEmboss(),
+                    A.RandomBrightnessContrast(),            
+                    ], p=0.3),
+                A.HueSaturationValue(p=0.3),
+                ToTensorV2(),
+                ])
+
+    return transform
+
+
 class CLDDataset(Dataset):
     def __init__(self, df, mode, transform=None):
         self.df = df.reset_index(drop=True)
