@@ -24,11 +24,14 @@ def parse_args(string=None):
                         help="checkpoints")
     parser.add_argument('--model_path', type=str, default='./checkpoints/bestmodel.pth',
                         help='modelpath')
-
+#   Flag
     parser.add_argument('--SplitFlag', type=bool, default=False,
                         help='Split Data or not')
+    parser.add_argument('--pretrained', type=bool, default=False, #5e-2
+                        help="Our pretrained")
 
-
+    parser.add_argument('--backbone', type=str, default='CustomResNext18',
+                        help='select Backbone')
     parser.add_argument('--train_set_pickle', type=str, default='./train_set.pkl',
                         help='Train set pickle')
 

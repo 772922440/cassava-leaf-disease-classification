@@ -11,3 +11,4 @@ def load_checkpoint(checkpoint_path, model, optimizer):
     model.load_state_dict(state['state_dict'])
     optimizer.load_state_dict(state['optimizer'])
     print('model loaded from %s' % checkpoint_path)
+

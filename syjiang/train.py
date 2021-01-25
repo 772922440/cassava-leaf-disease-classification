@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd 
 
 from dataset.leafdisease import CLDDataset
-from model.resnet import CustomResNext50 , CustomResNext18
+from model.resnet import CustomResNext50 , CustomResNext18, EfficientNet , SelectBackbone
 import torch.utils.data as data
 import torchvision.transforms as transforms 
 import torch
@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
 import os 
-from utils.utils import save_checkpoint, load_checkpoint
+from utils.utils import save_checkpoint, load_checkpoint 
 import pickle
 from efficientnet_pytorch import EfficientNet
 
@@ -22,10 +22,15 @@ from efficientnet_pytorch import EfficientNet
 def train(args, train_loader, valid_loader):
 
 
-    # model = CustomResNext50().to(args.device)
-    model = CustomResNext18().to(args.device)
-    # model = EfficientNet.from_pretrained('efficientnet-b3').to(args.device)
-    
+    model = SelectBackbone(args.backbone)
+    model = model.to(args.device)
+
+    if args.pretrained:
+        load_checkpoint(args.model_path, model, optimizer)
+        print('Load model Successfully')
+    else:
+        print('No the pretrained model, sorry!')
+
     pos_weight = torch.tensor([19.68, 9.77, 8.96, 1.63 , 8.30])
 
     loss_f = nn.CrossEntropyLoss()
@@ -38,9 +43,6 @@ def train(args, train_loader, valid_loader):
 
     best_acc = 0
 
-    if os.path.exists(args.checkpoints):
-        load_checkpoint(args.model_path, model, optimizer)
-        print('Load model Successfully')
 
     for epoch in range(1 ,args.epochs + 1):
 
@@ -54,8 +56,6 @@ def train(args, train_loader, valid_loader):
 
         for idx , (imgs, label) in enumerate(train_loader):
             imgs, lbls = imgs.to(args.device), label.to(args.device)
-
-            # print(imgs.shape)
 
             lbls = lbls.long()
             preds = model(imgs)            
@@ -115,8 +115,7 @@ def train(args, train_loader, valid_loader):
                 os.makedirs(args.checkpoints)
                 print('Make File Successfully')
             best_acc = acc
-
-            save_checkpoint(f'{args.checkpoints}/bestmodel_18.pth' , model, optimizer)
+            save_checkpoint(f'{args.checkpoints}/{arg.backbone}.pth' , model, optimizer)
 
 
 

@@ -60,7 +60,6 @@ def GetTrainStrongTransforms():
                     A.IAAAdditiveGaussianNoise(),
                     A.GaussNoise(),
                     ], p=0.2),
-                
                 A.OneOf([
                     A.MotionBlur(p=.2),
                     A.MedianBlur(blur_limit=3, p=0.1),
@@ -74,7 +73,7 @@ def GetTrainStrongTransforms():
                     ], p=0.2),
 
                 A.OneOf([
-                    A.CLAHE(clip_limit=2),
+                #     A.CLAHE(clip_limit=2),
                     A.IAASharpen(),
                     A.IAAEmboss(),
                     A.RandomBrightnessContrast(),            
@@ -82,38 +81,6 @@ def GetTrainStrongTransforms():
                 A.HueSaturationValue(p=0.3),
                 ToTensorV2(),
                 ])
-
-
-
-    # transform = A.Compose([
-    #         A.RandomRotate90(),
-    #         A.Flip(),
-    #         A.Transpose(),
-
-            # A.OneOf([
-            #     A.IAAAdditiveGaussianNoise(),
-            #     A.GaussNoise(),
-            # ], p=0.2),
-            # A.OneOf([
-            #     A.MotionBlur(p=.2),
-            #     A.MedianBlur(blur_limit=3, p=0.1),
-            #     A.Blur(blur_limit=3, p=0.1),
-            # ], p=0.2),
-            # A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
-            # A.OneOf([
-            #     A.OpticalDistortion(p=0.3),
-            #     A.GridDistortion(p=.1),
-            #     A.IAAPiecewiseAffine(p=0.3),
-            # ], p=0.2),
-            # A.OneOf([
-            #     A.CLAHE(clip_limit=2),
-            #     A.IAASharpen(),
-            #     A.IAAEmboss(),
-            #     A.RandomBrightnessContrast(),            
-            # ], p=0.3),
-            # A.HueSaturationValue(p=0.3),
-            # ToTensorV2(p=1.0),
-        # ])
 
     return transform
 
@@ -155,25 +122,21 @@ class CLDDataset(Dataset):
         image = cv2.imread(os.path.join(self.dirs, row.image_id))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # image = image.astype(np.float32)
-        # image = image.transpose(2,0,1)
-        # print(image.shape)
+
 
         if self.mode == 'train':
 
             if self.strongdata:
                 image = self.strong_aug_train(image = image)['image']
                 return image.float(), torch.tensor(row.label).float()
+
             else:
+
                 image = Image.fromarray(image)
                 image = self.train_trans(image)
-                
-                return image,   torch.tensor(row.label).float()
 
-        # print(image.shape)
-            
-            # image = image.permute(2,0,1)
-            # image = self.train_trans(image)
+                return image, torch.tensor(row.label).float()
+
         if self.mode == 'valid':
 
             if self.strongdata:
@@ -183,18 +146,5 @@ class CLDDataset(Dataset):
                 image = Image.fromarray(image)
                 image = self.valid_trans(image) # is tensor
 
-                return image,   torch.tensor(row.label).float()
+                return image, torch.tensor(row.label).float()
 
-
-# class DatasetWarpper(object):
-#     """docstring for  DataWarpper"""
-#     def __init__(self, path, valid_size):
-#         super( DataWarpper, self).__init__()
-#         self.path = path
-#         self.valid_size = valid_size
-
-#     def get_dataloaders(self):
-        
-#         return train_loader, valid_loader
-
-        
