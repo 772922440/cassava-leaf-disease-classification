@@ -108,7 +108,7 @@ def train(args, train_loader, valid_loader):
         acc = correct / len(valid_loader.dataset)
 
         print('\t Train Loss:{:.4f} , \t val Loss:{:.4f} \t Train_acc:{:.4f}, \tVal_acc:{:.4f} \n'.format(train_loss, valid_loss, train_acc , acc))
-        save_results(epoch, train_loss, valid_loss, train_acc , acc, './results/', args.save_filename)
+        save_results(epoch, train_loss.item(), valid_loss.item(), train_acc , acc, './results/', args.save_filename)
 
         if acc > best_acc :
 
