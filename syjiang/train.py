@@ -22,15 +22,18 @@ from efficientnet_pytorch import EfficientNet
 def train(args, train_loader, valid_loader):
 
 
-    model = CustomResNext50().to(args.device)
+    # model = CustomResNext50().to(args.device)
+    model = CustomResNext18().to(args.device)
     # model = EfficientNet.from_pretrained('efficientnet-b3').to(args.device)
+    
     pos_weight = torch.tensor([19.68, 9.77, 8.96, 1.63 , 8.30])
 
     loss_f = nn.CrossEntropyLoss()
+
     optimizer = optim.AdamW(model.parameters(), args.lr)
 
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(
-                            optimizer, T_max=15, 
+                            optimizer, T_max=args.epochs // 5, 
                             eta_min=args.eta_min, last_epoch=-1)
 
     best_acc = 0
@@ -113,7 +116,7 @@ def train(args, train_loader, valid_loader):
                 print('Make File Successfully')
             best_acc = acc
 
-            save_checkpoint(f'{args.checkpoints}/bestmodel_50.pth' , model, optimizer)
+            save_checkpoint(f'{args.checkpoints}/bestmodel_18.pth' , model, optimizer)
 
 
 
@@ -124,7 +127,7 @@ if __name__=='__main__':
     
     torch.manual_seed(2020)
     np.random.seed(2020)
-    
+
     df = pd.read_csv(args.train_csv)
     
     # Split into train df and test df and save pickle
