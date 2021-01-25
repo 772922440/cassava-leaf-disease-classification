@@ -17,7 +17,7 @@ def get_criterion(criterion, config):
     elif criterion=='BiTemperedLoss': 
         criterion = BiTemperedLogisticLoss(t1=config.t1, t2=config.t2, smoothing=config.smoothing)
     elif criterion=='TaylorCrossEntropyLoss':
-        criterion = TaylorCrossEntropyLoss(smoothing=config.smoothing)
+        criterion = TaylorCrossEntropyLoss(smoothing=config.smoothing, target_size=config.target_size)
     else:
         raise "criterion error"
     return criterion
@@ -373,13 +373,13 @@ class TaylorSoftmax(nn.Module):
 
     
 class TaylorCrossEntropyLoss(nn.Module):
-    def __init__(self, n=2, ignore_index=-1, reduction='mean', smoothing=0.05):
+    def __init__(self, n=2, ignore_index=-1, reduction='mean', smoothing=0.05, target_size):
         super(TaylorCrossEntropyLoss, self).__init__()
         assert n % 2 == 0
         self.taylor_softmax = TaylorSoftmax(dim=1, n=n)
         self.reduction = reduction
         self.ignore_index = ignore_index
-        self.lab_smooth = LabelSmoothingLoss(CFG.target_size, smoothing=smoothing)
+        self.lab_smooth = LabelSmoothingLoss(target_size, smoothing=smoothing)
 
     def forward(self, logits, labels):
         log_probs = self.taylor_softmax(logits).log()
