@@ -27,6 +27,7 @@ config = utils.read_all_config()
 logger = utils.get_logger(config)
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
+
 print(config)
 
 
@@ -157,6 +158,7 @@ def main():
 
     # optimizer
     optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay, amsgrad=False)
+    config.T_max = config.epochs
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
     criterion = cls_loss.get_criterion(config.criterion, config)
     print(f'Criterion: {criterion}')
