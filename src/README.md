@@ -47,4 +47,4 @@ bash batch_train.sh ensemble_train （配置文件） 0,1 (指定可用GPUid，�
 ## 配置系统
 * yaml 文件中保存超参数配置
 * 配置系统先读取 default.yaml，然后读取 name=xxx.yaml 并且覆盖 default.yaml
-* 命令行后面跟随的 key=value也会被读取进去，但默认为字符串格式 （哎 偷懒了）
+* 命令行后面跟随的 key=value也会被读取进去，value支持所有python数据类型以及表达式

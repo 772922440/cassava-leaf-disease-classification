@@ -96,6 +96,10 @@ def parse_command(params):
 
         key = _v.split("=")[0].strip()
         val = _v[_v.index('=')+1:].strip()
+        try:
+            val = eval(val) # for float boolean int function
+        except:
+            pass
         result[key] = val
     return result
     
@@ -118,21 +122,6 @@ def read_all_config(params = None):
     config = DotDict(default_config)
     config.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # device 
     return config
-
-
-# init logger
-def get_logger(config):
-    logger = getLogger(config.config_name)
-    logger.setLevel(INFO)
-    handler1 = StreamHandler()
-    handler1.setFormatter(Formatter("%(message)s"))
-    logger.addHandler(handler1)
-
-    if 'logfile' in config:
-        handler2 = FileHandler(filename=config.logfile)
-        handler2.setFormatter(Formatter("%(message)s"))
-        logger.addHandler(handler2)
-    return logger
 
 
 def mkdir(dir):

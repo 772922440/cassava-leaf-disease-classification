@@ -11,7 +11,6 @@ from dataset import leafdisease as ld
 
 # read config
 config = utils.read_all_config()
-logger = utils.get_logger(config)
 torch_utils.seed_torch(seed=config.seed)
 print(config)
 

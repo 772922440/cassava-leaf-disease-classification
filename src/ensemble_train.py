@@ -24,7 +24,6 @@ from model import get_backbone
 
 # read config
 config = utils.read_all_config()
-logger = utils.get_logger(config)
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
 
@@ -144,10 +143,9 @@ def valid_fn(valid_loader, model, criterion, device):
 
 def main():
     # train k fold
-    if 'k' not in config or int(config.k) < 0 or int(config.k) >= config.k_folds:
+    if 'k' not in config or config.k < 0 or config.k >= config.k_folds:
         print("please input correct k fold.(ensemble_train.py name=ensemble_train k=xxx)")
         return 1
-    config.k = int(config.k)
 
     # output dir
     utils.mkdir(join(config.model_base_path, config.backbone))
