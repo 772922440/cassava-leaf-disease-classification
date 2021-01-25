@@ -6,25 +6,27 @@ import numpy as np
 import cv2
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+import torchvision
+import PIL
 
 
 def get_transform(image_size):
     train_trans = transforms.Compose([
+            transforms.ToTensor(),
             transforms.Resize(image_size),
             transforms.RandomRotation(60, fill=(0,)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomApply([
                     transforms.ColorJitter(0.1,0.1,0.1,0)
                 ],p=0.4),
-            transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225],
             ),
         ])
     test_trans = transforms.Compose([
-            transforms.Resize(image_size),
             transforms.ToTensor(),
+            transforms.Resize(image_size),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225], )
@@ -36,6 +38,11 @@ class CLDDataset(Dataset):
         self.df = df.reset_index(drop=True)
         self.mode = mode
         self.transform = transform
+
+        if isinstance(transform ,torchvision.transforms.transforms.Compose):
+            self.transform_type = 'torch'
+        else:
+            self.transform_type = 'albu'
         
     def __len__(self):
         return len(self.df)
@@ -43,17 +50,17 @@ class CLDDataset(Dataset):
     def __getitem__(self, index):
         row = self.df.loc[index]
         image = cv2.imread(row.filepath)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = image.transpose(2,0,1)
-
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # H W C
+        
         # tranform
-        image = self.transform(image=image)
-        if 'image' in image: # for A.compose
-            image = image['image']
+        if self.transform_type == "torch":
+            image = self.transform(image)
+        else:
+            image = self.transform(image=image)['image']
         
         if self.mode == 'test':
             return torch.tensor(image).float()
         else:
-            return torch.tensor(image).float(), torch.tensor(row.label).float()
+            return torch.tensor(image).float(), torch.tensor(row.label).long()
 
         

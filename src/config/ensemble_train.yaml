@@ -1,12 +1,12 @@
 # split train.csv
 k_folds: 5
 
-backbone: 'resnext50_32x4d'
+backbone: 'mobilenetv3_large_100'
 lr: 1e-3
 weight_decay: 1e-4
 batch_size: 32
-epochs: 30
-max_grad_norm: 50
+epochs: 20
+max_grad_norm: 10
 gradient_accumulation_steps: 1
 print_freq: 10
 

@@ -8,8 +8,8 @@ ensemble_method: 'mean'
 model_list: 
   - backbone: 'resnext50_32x4d'
     filename:
-      - 'resnext50_32x4d0.pth'
-      - 'resnext50_32x4d1.pth'
-      - 'resnext50_32x4d2.pth'
-      - 'resnext50_32x4d3.pth'
-      - 'resnext50_32x4d4.pth'
+      - 'fold0_best.pth'
+      - 'fold1_best.pth'
+      - 'fold2_best.pth'
+      - 'fold3_best.pth'
+      - 'fold4_best.pth'

@@ -1,4 +1,3 @@
-from shutil import RegistryError
 from .resnet import *
 
 def get_backbone(backbone, config):
@@ -6,6 +5,8 @@ def get_backbone(backbone, config):
         backbone = CustomResNext18(target_size=config.target_size)
     elif backbone=='resnext50_32x4d':
         backbone = CustomResNext50(target_size=config.target_size)
+    elif backbone=='mobilenetv3_large_100':
+        backbone = MobileNetV3(target_size=config.target_size)
     else:
-        raise "backbone error"
+        backbone = MobileNetV3(model_name=backbone, target_size=config.target_size)
     return backbone

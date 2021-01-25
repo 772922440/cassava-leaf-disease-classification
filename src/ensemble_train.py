@@ -122,9 +122,10 @@ def valid_fn(valid_loader, model, criterion, device):
 
 def main():
     # train k fold
-    if 'k' not in config or config.k < 0 or config.k >= config.k_folds:
+    if 'k' not in config or int(config.k) < 0 or int(config.k) >= config.k_folds:
         print("please input correct k fold.(ensemble_train.py name=ensemble_train k=xxx)")
         return 1
+    config.k = int(config.k)
 
     # output dir
     utils.mkdir(join(config.model_base_path, config.backbone))
@@ -152,7 +153,7 @@ def main():
     optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay, amsgrad=False)
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
     criterion = cls_loss.get_criterion(config.criterion, config)
-    logger.info(f'Criterion: {criterion}')
+    print(f'Criterion: {criterion}')
 
     # train epochs
     best_score = 0.
@@ -170,14 +171,14 @@ def main():
         
         # log
         elapsed = time.time() - start_time
-        logger.info(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
-        logger.info(f'Epoch {epoch+1} - Accuracy: {score}')
+        print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
+        print(f'Epoch {epoch+1} - Accuracy: {score}')
 
         if score > best_score:
             best_score = score
-            logger.info(f'Epoch {epoch+1} - Save Best Score: {best_score:.4f} Model')
+            print(f'Epoch {epoch+1} - Save Best Score: {best_score:.4f} Model')
             torch.save(model.state_dict(), 
-                join(config.model_base_path, config.backbone,f'fold{config.k}_best.pth'))
+                join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
 # run
 main()
