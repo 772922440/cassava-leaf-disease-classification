@@ -14,7 +14,7 @@
 ├── ensemble_split.py        # 集成学习划分 train.csv 为 k 个 folds
 ├── ensemble_train.py        # 集成学习训练某一个 fold
 ├── model
-│   ├── __init__.py
+│   ├── __init__.py          # 模型工厂函数放在这里
 │   └── resnet.py            # resnet backbone 实现
 ├── README.md
 └── utils
@@ -31,12 +31,18 @@
   ```
 * train
   ```
-  python ensemble_train.py name=ensemble_train k=0
+  python ensemble_train.py name=ensemble_train k=0 (指定训练第k个 fold)
   ```
 * eval
-```
-  python ensemble_eval.py name=ensemble_train
   ```
+  python ensemble_eval.py name=ensemble_eval (配置集成那些model，默认mean策略)
+  ```
+
+## 批量训练
+```
+bash batch_train.sh ensemble_train （配置文件） 0,1 (指定可用GPUid，一个GPUtrain一个fold)
+```
+
 
 ## 配置系统
 * yaml 文件中保存超参数配置

@@ -1,5 +1,5 @@
 #!/bin/bash
-config=$1  # ensemble_train
+config=$1  # ensemble_train 配置文件
 gpus=$2    # 0,1
 k_flods=$3   # 5
 
