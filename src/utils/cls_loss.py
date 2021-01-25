@@ -373,7 +373,7 @@ class TaylorSoftmax(nn.Module):
 
     
 class TaylorCrossEntropyLoss(nn.Module):
-    def __init__(self, n=2, ignore_index=-1, reduction='mean', smoothing=0.05, target_size):
+    def __init__(self, n=2, ignore_index=-1, reduction='mean', smoothing=0.05, target_size = 5):
         super(TaylorCrossEntropyLoss, self).__init__()
         assert n % 2 == 0
         self.taylor_softmax = TaylorSoftmax(dim=1, n=n)
