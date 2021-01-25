@@ -48,6 +48,10 @@ def GetTrainStrongTransforms():
     transform = A.Compose([
                 A.Resize(512,512),
                 A.RandomRotate90(),
+                A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+                ),
                 A.Flip(),
                 A.RandomCrop(width=512, height=512),
                 A.HorizontalFlip(p=0.5),
@@ -117,6 +121,10 @@ def GetTrainStrongTransforms():
 def GetValidStrongTransforms():
     transform = A.Compose([
         A.Resize(512,512),
+        A.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225],
+        ),
         ToTensorV2(),
         ])
     return transform
