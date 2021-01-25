@@ -42,6 +42,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     # switch to train mode
     model.train()
     preds = []
+    preds_labels = []
     start = end = time.time()
     global_step = 0
     for step, (images, labels) in enumerate(train_loader):
@@ -62,6 +63,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
 
         # record accuracy
         preds.append(y_preds.softmax(dim=-1).to('cpu'))
+        preds_labels.append(labels.to('cpu'))
         # record loss
         losses.update(loss.item(), batch_size)
 
@@ -96,8 +98,9 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
                    ))
-    predictions = torch.cat(preds, dim=0)
-    return losses.avg, predictions
+    preds = torch.cat(preds, dim=0)
+    preds_labels = torch.cat(preds_labels, dim=0)
+    return losses.avg, preds, preds_labels
 
 
 def valid_fn(valid_loader, model, criterion, device):
@@ -179,8 +182,7 @@ def main():
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
-        avg_loss, train_preds = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
-        train_labels = train[config.target_col].values
+        avg_loss, train_preds, train_labels = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
 
         # eval
