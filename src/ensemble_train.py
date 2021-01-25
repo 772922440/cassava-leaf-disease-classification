@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
+from torch.cuda.amp import autocast, GradScaler
 
 import warnings 
 warnings.filterwarnings('ignore')
@@ -26,6 +27,7 @@ config = utils.read_all_config()
 logger = utils.get_logger(config)
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
+print(config)
 
 
 def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device):
@@ -33,6 +35,9 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     data_time =  utils.AverageMeter()
     losses =  utils.AverageMeter()
     scores =  utils.AverageMeter()
+
+    if config.amp is not None:
+        scaler = GradScaler()
 
     # switch to train mode
     model.train()
@@ -47,22 +52,33 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         batch_size = labels.size(0)
 
         # forward
-        y_preds = model(images)
-        loss = criterion(y_preds, labels)
+        if config.amp is not None:
+            with autocast():
+                y_preds = model(images)
+                loss = criterion(y_preds, labels)
+        else:
+            y_preds = model(images)
+            loss = criterion(y_preds, labels)
+
         # record accuracy
         preds.append(y_preds.softmax(dim=-1).to('cpu'))
         # record loss
         losses.update(loss.item(), batch_size)
-        if config.gradient_accumulation_steps > 1:
-            loss = loss / config.gradient_accumulation_steps
-        loss.backward()
-        grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
 
-        if (step + 1) % config.gradient_accumulation_steps == 0:
-            optimizer.step()
+        if config.amp is not None:
             optimizer.zero_grad()
-            global_step += 1
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            optimizer.zero_grad()
+            loss.backward()
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+            optimizer.step()
 
+        global_step += 1
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -106,8 +122,6 @@ def valid_fn(valid_loader, model, criterion, device):
         losses.update(loss.item(), batch_size)
         # record accuracy
         preds.append(y_preds.softmax(dim=-1).to('cpu'))
-        if config.gradient_accumulation_steps > 1:
-            loss = loss / config.gradient_accumulation_steps
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -138,6 +152,12 @@ def main():
     transform_train, transform_valid = ld.get_transform(config.image_size)
     model = get_backbone(config.backbone, config).to(device=config.device)
 
+    # optimizer
+    optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay, amsgrad=False)
+    scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
+    criterion = cls_loss.get_criterion(config.criterion, config)
+    print(f'Criterion: {criterion}')
+
     # split train valid
     train = pd.read_csv(join(config.data_base_path, str(config.k_folds) + 'folds.csv'))
     train['filepath'] = train.image_id.apply(lambda x: join(config.data_base_path, config.train_images, f'{x}'))
@@ -153,19 +173,14 @@ def main():
     valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False,
                             num_workers=config.num_workers, pin_memory=True, drop_last=False)
 
-    # optimizer
-    optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay, amsgrad=False)
-    scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
-    criterion = cls_loss.get_criterion(config.criterion, config)
-    print(f'Criterion: {criterion}')
-
     # train epochs
     best_score = 0.
+    best_epoch = 0
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
         avg_loss, train_preds = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
-        train_labels = valid[config.target_col].values
+        train_labels = train[config.target_col].values
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
 
         # eval
@@ -183,9 +198,12 @@ def main():
 
         if val_score > best_score:
             best_score = val_score
+            best_epoch = epoch+1
             print(f'Epoch {epoch+1} - Save Best Score: {best_score:.4f} Model')
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
+
+    print(f'Best Epoch: {best_epoch} Best Score: {best_score:.4f}')
 
 # run
 main()

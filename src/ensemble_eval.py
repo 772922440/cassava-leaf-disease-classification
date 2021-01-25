@@ -18,6 +18,7 @@ from model import get_backbone
 config = utils.read_all_config()
 utils.mkdir(config.output_dir)
 torch_utils.seed_torch(seed=config.seed)
+print(config)
 
 # test data
 test = pd.read_csv(join(config.data_base_path, config.test_csv))
