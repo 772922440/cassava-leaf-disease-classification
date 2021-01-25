@@ -1,4 +1,8 @@
-k_folds: 5
+# predict csv path
+output_dir: "../result"
+
+batch_size: 32
+ensemble_method: 'mean'
 
 # models list
 model_list: 

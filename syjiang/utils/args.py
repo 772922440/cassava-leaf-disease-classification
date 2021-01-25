@@ -35,6 +35,10 @@ def parse_args(string=None):
     parser.add_argument('--valid_set_pickle', type=str, default='./valid_set.pkl',
                         help='Vilid set pickle')
 
+    parser.add_argument('--DataAugmentationStrong', type=bool, default=False,
+                        help='Strong Data Augmentation ')
+
+
     if string is not None: args = parser.parse_args(string)  
     else: args = parser.parse_args()
 

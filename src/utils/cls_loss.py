@@ -2,6 +2,26 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
+def get_criterion(criterion, config):
+    if criterion=='CrossEntropyLoss':
+        criterion = nn.CrossEntropyLoss()
+    elif criterion=='LabelSmoothing':
+        criterion = LabelSmoothingLoss(classes=config.target_size, smoothing=config.smoothing)
+    elif criterion=='FocalLoss':
+        criterion = FocalLoss().to(config.device)
+    elif criterion=='FocalCosineLoss':
+        criterion = FocalCosineLoss()
+    elif criterion=='SymmetricCrossEntropyLoss':
+        criterion = SymmetricCrossEntropy().to(config.device)
+    elif criterion=='BiTemperedLoss': 
+        criterion = BiTemperedLogisticLoss(t1=config.t1, t2=config.t2, smoothing=config.smoothing)
+    elif criterion=='TaylorCrossEntropyLoss':
+        criterion = TaylorCrossEntropyLoss(smoothing=config.smoothing)
+    else:
+        raise "criterion error"
+    return criterion
+    
 class LabelSmoothingLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, dim=-1): 
         super(LabelSmoothingLoss, self).__init__() 

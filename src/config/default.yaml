@@ -1,24 +1,19 @@
 # data
-train_csv: "../data/train.csv"
-train_images: "../data/train_images/"
+data_base_path: "../data"
+train_csv: "train.csv"
+train_images: "train_images"
 
-test_csv: "../data/test.csv"
-test_images: "../data/test_images/"
+test_csv: "sample_submission.csv"
+test_images: "test_images"
 
-# predict csv path
-output_dir: "../result"
+target_col: "label"
 
 # save models
+# save to ../models/$backbone/xxxx.pth
 model_base_path: '../models/'
-best_model_suffix: "best.pth"
 
 # hyperparameters
 target_size: 5 # network output size
-batch_size: 32
-epochs: 50
 image_size: 512
-lr: 2e-4
-eta_min: 2e-5
-weight_decay: 1e-4
 seed: 2020
 num_workers: 4

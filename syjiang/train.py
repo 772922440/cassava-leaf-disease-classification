@@ -15,6 +15,7 @@ from torch.utils.data import Dataset, DataLoader
 import os 
 from utils.utils import save_checkpoint, load_checkpoint
 import pickle
+from efficientnet_pytorch import EfficientNet
 
 
 
@@ -22,7 +23,7 @@ def train(args, train_loader, valid_loader):
 
 
     model = CustomResNext50().to(args.device)
-
+    # model = EfficientNet.from_pretrained('efficientnet-b3').to(args.device)
     pos_weight = torch.tensor([19.68, 9.77, 8.96, 1.63 , 8.30])
 
     loss_f = nn.CrossEntropyLoss()
@@ -50,6 +51,8 @@ def train(args, train_loader, valid_loader):
 
         for idx , (imgs, label) in enumerate(train_loader):
             imgs, lbls = imgs.to(args.device), label.to(args.device)
+
+            # print(imgs.shape)
 
             lbls = lbls.long()
             preds = model(imgs)            
@@ -151,8 +154,15 @@ if __name__=='__main__':
 
     df_train , df_val = df_set_index.loc[train_dirs].reset_index(), df_set_index.loc[valid_dirs].reset_index()
 
-    train_dataset = CLDDataset(df_train, dirs=args.train_dirs, mode = 'train')
-    valid_dataset = CLDDataset(df_val, dirs=args.train_dirs, mode = 'valid')
+    train_dataset = CLDDataset(df_train, 
+                    dirs=args.train_dirs, 
+                    mode = 'train',
+                    DataAugmentationStrong = args.DataAugmentationStrong)
+
+    valid_dataset = CLDDataset(df_val, 
+                    dirs=args.train_dirs, 
+                    mode = 'valid',
+                    DataAugmentationStrong = args.DataAugmentationStrong)
 
     train_loader = DataLoader(train_dataset,
                               batch_size=args.bsize,
