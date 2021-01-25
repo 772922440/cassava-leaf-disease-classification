@@ -115,7 +115,7 @@ def train(args, train_loader, valid_loader):
                 os.makedirs(args.checkpoints)
                 print('Make File Successfully')
             best_acc = acc
-            save_checkpoint(f'{args.checkpoints}/{arg.backbone}.pth' , model, optimizer)
+            save_checkpoint(f'{args.checkpoints}/{args.backbone}.pth' , model, optimizer)
 
 
 
