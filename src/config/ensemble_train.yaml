@@ -11,4 +11,4 @@ print_freq: 100
 
 criterion: CrossEntropyLoss
 scheduler: ~
-amp: True
+amp: False

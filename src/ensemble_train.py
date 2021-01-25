@@ -36,7 +36,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     losses =  utils.AverageMeter()
     scores =  utils.AverageMeter()
 
-    if config.amp is not None:
+    if config.amp:
         scaler = GradScaler()
 
     # switch to train mode
@@ -52,7 +52,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         batch_size = labels.size(0)
 
         # forward
-        if config.amp is not None:
+        if config.amp:
             with autocast():
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
@@ -65,7 +65,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         # record loss
         losses.update(loss.item(), batch_size)
 
-        if config.amp is not None:
+        if config.amp:
             optimizer.zero_grad()
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)

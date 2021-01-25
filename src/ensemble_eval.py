@@ -61,6 +61,6 @@ def inference(model_list, test_loader, device):
 
 # predict
 probs = inference(config.model_list, test_loader, config.device)
-test['label'] = torch.argmax(probs, dim=-1).numpy()
-test[['image_id', 'label']].to_csv(os.path.join(config.output_dir, 'submission.csv'), index=False)
+test[config.target_col] = torch.argmax(probs, dim=-1).numpy()
+test[['image_id', config.target_col]].to_csv(os.path.join(config.output_dir, 'submission.csv'), index=False)
 test.head()
