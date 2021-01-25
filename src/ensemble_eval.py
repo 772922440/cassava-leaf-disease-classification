@@ -40,7 +40,7 @@ def inference(model_list, test_loader, device):
         # load models
         for m in range(config.model_list):
             backbone = m['backbone']
-            model = get_backbone(backbone).to(device=config.device)
+            model = get_backbone(backbone, config).to(device=config.device)
             model.eval()
 
             for filename in m['filename']:

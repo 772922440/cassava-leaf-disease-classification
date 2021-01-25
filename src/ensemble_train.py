@@ -36,6 +36,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
 
     # switch to train mode
     model.train()
+    preds = []
     start = end = time.time()
     global_step = 0
     for step, (images, labels) in enumerate(train_loader):
@@ -48,6 +49,8 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         # forward
         y_preds = model(images)
         loss = criterion(y_preds, labels)
+        # record accuracy
+        preds.append(y_preds.softmax(dim=-1).to('cpu'))
         # record loss
         losses.update(loss.item(), batch_size)
         if config.gradient_accumulation_steps > 1:
@@ -77,7 +80,8 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
                    ))
-    return losses.avg
+    predictions = torch.cat(preds, dim=0)
+    return losses.avg, predictions
 
 
 def valid_fn(valid_loader, model, criterion, device):
@@ -143,7 +147,7 @@ def main():
     # loader
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
-                            num_workers=config.num_workers, pin_memory=True, drop_last=True)
+                            num_workers=config.num_workers, pin_memory=True, drop_last=False)
 
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
     valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False,
@@ -160,11 +164,14 @@ def main():
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
-        avg_loss = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
+        avg_loss, train_preds = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
+        train_labels = valid[config.target_col].values
+        train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
+
         # eval
-        avg_val_loss, preds = valid_fn(valid_loader, model, criterion, config.device)
+        avg_val_loss, val_preds = valid_fn(valid_loader, model, criterion, config.device)
         valid_labels = valid[config.target_col].values
-        score = accuracy_score(valid_labels, preds.argmax(dim=-1))
+        val_score = accuracy_score(valid_labels, val_preds.argmax(dim=-1))
 
         # scheduler
         torch_utils.scheduler_step(scheduler, avg_val_loss)
@@ -172,10 +179,10 @@ def main():
         # log
         elapsed = time.time() - start_time
         print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
-        print(f'Epoch {epoch+1} - Accuracy: {score}')
+        print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
 
-        if score > best_score:
-            best_score = score
+        if val_score > best_score:
+            best_score = val_score
             print(f'Epoch {epoch+1} - Save Best Score: {best_score:.4f} Model')
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
