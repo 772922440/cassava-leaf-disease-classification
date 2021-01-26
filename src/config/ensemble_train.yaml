@@ -14,3 +14,4 @@ print_freq: 100
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 amp: False
+transform: "default"

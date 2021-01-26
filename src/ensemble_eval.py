@@ -25,7 +25,7 @@ test = pd.read_csv(join(config.data_base_path, config.test_csv))
 test['filepath'] = test.image_id.apply(lambda x: join(config.data_base_path, config.test_images, f'{x}'))
 
 # transform
-transforms = ld.get_transform(image_size=config.image_size)[1]
+transforms = ld.get_albu_transform("default", config)[1]
 test_dataset = ld.CLDDataset(test, 'test', transform=transforms)
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
