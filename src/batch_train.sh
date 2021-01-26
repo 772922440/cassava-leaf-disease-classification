@@ -12,7 +12,7 @@ fi
 len_gpu=${#gpus[@]}
 
 if [ ! $threads ]; then
-  threads=len_gpu
+  threads=$len_gpu
 fi
 
 if [ ! $k_flods ]; then
