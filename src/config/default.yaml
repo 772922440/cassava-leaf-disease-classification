@@ -16,4 +16,4 @@ model_base_path: '../models/'
 target_size: 5 # network output size
 image_size: 512
 seed: 2020
-num_workers: 4
+num_workers: 8
