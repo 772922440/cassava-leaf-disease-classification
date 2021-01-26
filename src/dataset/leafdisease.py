@@ -20,7 +20,9 @@ def get_albu_transform(transform, config):
         ToTensorV2(),
         ])
 
-    if transform == "strong":
+    if transform == "torchvision":
+        train_trans, test_trans = get_torch_transform(config.image_size)
+    elif transform == "strong":
         train_trans = A.Compose([
                 A.Compose([
                     A.RandomRotate90(),
@@ -58,11 +60,13 @@ def get_albu_transform(transform, config):
                 ),
                 ToTensorV2(),
                 ])
+    else:
+        raise "transform error"
 
     return train_trans, test_trans
 
 
-def get_transform(image_size):
+def get_torch_transform(image_size):
     train_trans = transforms.Compose([
             transforms.ToTensor(),
             transforms.Resize(image_size),
