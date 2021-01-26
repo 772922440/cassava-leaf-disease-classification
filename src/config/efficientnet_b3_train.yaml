@@ -2,9 +2,9 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: AdamP
-batch_size: 56
-epochs: 30
+optimizer: AdamW
+batch_size: 32
+epochs: 20
 min_lr: 1e-5
 lr: 1e-3
 weight_decay: 1e-4
@@ -15,4 +15,4 @@ transform: "strong"
 p: 0.9 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
-amp: True
+amp: False
