@@ -1,12 +1,18 @@
 #!/bin/bash
 config=$1  # ensemble_train 配置文件
 gpus=$2    # 0,1
-k_flods=$3   # 5
+threads=$3 # 2 并行进程数量
+k_flods=$4   # 5
 
 gpus=(${gpus//,/ })
 
 if [ ! $gpus ]; then
   gpus=(0)
+fi
+len_gpu=${#gpus[@]}
+
+if [ ! $threads ]; then
+  threads=len_gpu
 fi
 
 if [ ! $k_flods ]; then
@@ -15,16 +21,15 @@ fi
 
 echo "CONFIG:" $config
 echo "GPU LIST:" "${gpus[@]}"
+echo "THREADS:" $threads
 echo "K_FLODS:" $k_flods
 
-
 # run parallel
-len_gpu=${#gpus[@]}
 for((i=0;i<k_flods;i++)); do
     gpu=${gpus[$((i % len_gpu))]}  
     CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py name="$config" k="$i" &
 
-    if [ $(((i+1) % len_gpu)) -eq 0 ]; then
+    if [ $(((i+1) % threads)) -eq 0 ]; then
         wait
     fi
     sleep 3

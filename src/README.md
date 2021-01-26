@@ -40,7 +40,7 @@
 
 ## 批量训练
 ```
-bash batch_train.sh ensemble_train （配置文件） 0,1 (指定可用GPUid，一个GPUtrain一个fold)
+bash batch_train.sh ensemble_train （配置文件） 0,1 (指定可用GPU ID) 2 （指定并行数量，默认为GPU数量）
 ```
 
 
