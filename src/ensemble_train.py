@@ -151,7 +151,7 @@ def main():
     utils.mkdir(join(config.model_base_path, config.backbone))
 
     # init model
-    transform_train, transform_valid = ld.get_transform(config.image_size)
+    transform_train, transform_valid = ld.get_albu_transform(config.image_size)
     model = get_backbone(config.backbone, config).to(device=config.device)
 
     # optimizer

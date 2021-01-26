@@ -34,7 +34,7 @@ def get_transform(image_size):
     return train_trans, test_trans
 
 def get_albu_transform(image_size):
-    transform = A.Compose([
+    train_trans = A.Compose([
                 A.Resize(512,512),
                 A.RandomRotate90(),
                 A.Normalize(
@@ -71,8 +71,15 @@ def get_albu_transform(image_size):
                 A.HueSaturationValue(p=0.3),
                 ToTensorV2(),
                 ])
-
-    return transform
+    test_trans = A.Compose([
+        A.Resize(512,512),
+        A.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225],
+        ),
+        ToTensorV2(),
+        ])
+    return train_trans, test_trans
 
 
 class CLDDataset(Dataset):
