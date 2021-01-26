@@ -40,7 +40,7 @@
 
 ## 批量训练
 ```
-bash batch_train.sh ensemble_train （配置文件） 0,1 (指定可用GPU ID) 2 （指定并行数量，默认为GPU数量）
+bash batch_train.sh ensemble_train （配置文件） "backbone=mobilenetv3_large_100,optimizer=AdamP" (训练的args，逗号分割) 0,1 (可用GPU ID) 2 （并行数量，默认为GPU数量） 
 ```
 
 
