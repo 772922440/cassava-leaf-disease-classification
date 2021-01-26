@@ -20,42 +20,44 @@ def get_albu_transform(transform, config):
         ToTensorV2(),
         ])
 
-    train_trans = A.Compose([
-                A.Resize(config.image_size, config.image_size),
-                A.RandomRotate90(),
+    if transform == "strong":
+        train_trans = A.Compose([
+                A.Compose([
+                    A.RandomRotate90(),
+                    A.Flip(),
+                    A.RandomCrop(width=config.image_size, height=config.image_size),
+                    A.HorizontalFlip(p=0.5),
+                    A.RandomBrightnessContrast(p=0.2),
+                    A.OneOf([
+                        A.IAAAdditiveGaussianNoise(),
+                        A.GaussNoise(),
+                        ], p=0.2),
+                    A.OneOf([
+                        A.MotionBlur(p=.2),
+                        A.MedianBlur(blur_limit=3, p=0.1),
+                        A.Blur(blur_limit=3, p=0.1),
+                        ], p=0.2),
+                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+                    A.OneOf([
+                        A.OpticalDistortion(p=0.3),
+                        A.GridDistortion(p=.1),
+                        A.IAAPiecewiseAffine(p=0.3),
+                        ], p=0.2),
+                    A.OneOf([
+                        A.CLAHE(clip_limit=2),
+                        A.IAASharpen(),
+                        A.IAAEmboss(),
+                        A.RandomBrightnessContrast(),            
+                        ], p=0.3),
+                    A.HueSaturationValue(p=0.3),
+                    ], p=0.5),
+                A.Resize(config.image_size,config.image_size),
                 A.Normalize(
                     mean=[0.485, 0.456, 0.406],
                     std=[0.229, 0.224, 0.225],
                 ),
-                A.Flip(),
-                A.RandomCrop(width=config.image_size, height=config.image_size),
-                A.HorizontalFlip(p=0.5),
-                A.RandomBrightnessContrast(p=0.2),
-                # A.OneOf([
-                #     A.IAAAdditiveGaussianNoise(),
-                #     A.GaussNoise(),
-                #     ], p=0.2),
-                # A.OneOf([
-                #     A.MotionBlur(p=.2),
-                #     A.MedianBlur(blur_limit=3, p=0.1),
-                #     A.Blur(blur_limit=3, p=0.1),
-                #     ], p=0.2),
-                A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
-                # A.OneOf([
-                #     A.OpticalDistortion(p=0.3),
-                #     A.GridDistortion(p=.1),
-                #     A.IAAPiecewiseAffine(p=0.3),
-                #     ], p=0.2),
-                # A.OneOf([
-                #     A.IAASharpen(),
-                #     A.IAAEmboss(),
-                #     A.RandomBrightnessContrast(),            
-                #     ], p=0.3),
-                A.HueSaturationValue(p=0.3),
                 ToTensorV2(),
                 ])
-
-    # 这里通过 transform 作为 key 增加自定义的
 
     return train_trans, test_trans
 
