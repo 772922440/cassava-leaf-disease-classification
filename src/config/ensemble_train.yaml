@@ -2,6 +2,7 @@
 k_folds: 5
 
 backbone: 'mobilenetv3_large_100'
+optimizer: AdamW
 lr: 1e-3
 min_lr: 1e-4
 weight_decay: 1e-4

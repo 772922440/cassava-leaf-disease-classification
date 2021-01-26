@@ -18,7 +18,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # our codes
-from utils import utils, torch_utils, cls_loss
+from utils import utils, torch_utils, cls_loss, optim
 from dataset import leafdisease as ld
 from model import get_backbone
 
@@ -155,7 +155,7 @@ def main():
     model = get_backbone(config.backbone, config).to(device=config.device)
 
     # optimizer
-    optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay, amsgrad=False)
+    optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
     config.T_max = config.epochs
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
     criterion = cls_loss.get_criterion(config.criterion, config)

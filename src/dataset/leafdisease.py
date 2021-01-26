@@ -38,8 +38,8 @@ def get_albu_transform(image_size):
                 A.Resize(512,512),
                 A.RandomRotate90(),
                 A.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
                 ),
                 A.Flip(),
                 A.RandomCrop(width=512, height=512),
@@ -49,7 +49,6 @@ def get_albu_transform(image_size):
                     A.IAAAdditiveGaussianNoise(),
                     A.GaussNoise(),
                     ], p=0.2),
-                
                 A.OneOf([
                     A.MotionBlur(p=.2),
                     A.MedianBlur(blur_limit=3, p=0.1),
@@ -63,7 +62,7 @@ def get_albu_transform(image_size):
                     ], p=0.2),
 
                 A.OneOf([
-                    A.CLAHE(clip_limit=2),
+                #     A.CLAHE(clip_limit=2),
                     A.IAASharpen(),
                     A.IAAEmboss(),
                     A.RandomBrightnessContrast(),            
@@ -71,6 +70,7 @@ def get_albu_transform(image_size):
                 A.HueSaturationValue(p=0.3),
                 ToTensorV2(),
                 ])
+                
     test_trans = A.Compose([
         A.Resize(512,512),
         A.Normalize(
