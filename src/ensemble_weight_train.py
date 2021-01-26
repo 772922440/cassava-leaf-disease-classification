@@ -34,11 +34,12 @@ class EnsembleWeight(nn.Module):
     def __init__(self, model_size = 5, target_size = 5):
         super().__init__()
         self.w = nn.Parameter(torch.empty(model_size, target_size))
-        init.constant_(self.w, 1e-2)
+        init.constant_(self.w, 1e-4)
 
     def forward(self, x): 
         # b, model, cls
         x = torch.sum(torch.softmax(self.w, dim=0) * x, dim=1)
+        x /= x.sum(dim=-1, keepdim=True).detach()
         return x
 
 

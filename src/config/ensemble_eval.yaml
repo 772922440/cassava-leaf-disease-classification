@@ -16,12 +16,12 @@ model_list:
 print_freq: 10
 batch_size: 128
 transform: "strong"
-p: 0.9 # for transform
+p: 0.8 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 optimizer: AdamW
 epochs: 20
 min_lr: 1e-3
 lr: 1e-2
-weight_decay: 0
+weight_decay: 1e-4
 max_grad_norm: 10
