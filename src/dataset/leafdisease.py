@@ -50,7 +50,7 @@ def get_albu_transform(transform, config):
                         A.RandomBrightnessContrast(),            
                         ], p=0.3),
                     A.HueSaturationValue(p=0.3),
-                    ], p=1),
+                    ], p=config.p),
                 A.Resize(config.image_size,config.image_size),
                 A.Normalize(
                     mean=[0.485, 0.456, 0.406],
