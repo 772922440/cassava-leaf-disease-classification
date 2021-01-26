@@ -205,6 +205,8 @@ def main():
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
+    # 最终结果
+    print(config)
     print(f'Best Epoch: {best_epoch} Best Score: {best_score:.4f}')
 
 # run
