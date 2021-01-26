@@ -13,6 +13,7 @@ import torch.nn as nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from torch.cuda.amp import autocast, GradScaler
+import torch.nn.init as init
 
 import warnings 
 warnings.filterwarnings('ignore')
@@ -32,12 +33,12 @@ print(config)
 class EnsembleWeight(nn.Module):
     def __init__(self, model_size = 5, target_size = 5):
         super().__init__()
-        self.w = nn.Parameter(torch.randn(model_size, target_size))
+        self.w = nn.Parameter(torch.empty(model_size, target_size))
+        init.constant_(self.w, 1e-2)
 
     def forward(self, x): 
         # b, model, cls
-        x = torch.sum(self.w.abs() * x, dim=1)
-        x = torch.softmax(x, dim=-1)
+        x = torch.sum(torch.softmax(self.w, dim=0) * x, dim=1)
         return x
 
 
@@ -108,6 +109,7 @@ def train_fn(train_loader, weight_model, criterion, optimizer, epoch, scheduler,
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
                    ))
+            print(torch.softmax(weight_model.w, dim=0))
     preds = torch.cat(preds, dim=0)
     preds_labels = torch.cat(preds_labels, dim=0)
     return losses.avg, preds, preds_labels
@@ -120,17 +122,17 @@ def main():
     # init model
     transform_train = ld.get_albu_transform(config.transform, config)[0]
     model_size = sum(len(m['filename']) for m in config.model_list)
-    model = EnsembleWeight(model_size, config.target_size).to(device=config.device)
+    weight_model = EnsembleWeight(model_size, config.target_size).to(device=config.device)
 
     # optimizer
-    optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
+    optimizer = optim.get_optimizer(config.optimizer, config, weight_model.parameters())
     config.T_max = config.epochs
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
     criterion = cls_loss.get_criterion(config.criterion, config)
     print(f'Criterion: {criterion}')
 
     # train data
-    train = pd.read_csv(join(config.data_base_path, str(config.k_folds) + 'folds.csv'))
+    train = pd.read_csv(join(config.data_base_path, config.train_csv))
     train['filepath'] = train.image_id.apply(lambda x: join(config.data_base_path, config.train_images, f'{x}'))
 
     # loader
@@ -142,7 +144,7 @@ def main():
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
-        avg_loss, train_preds, train_labels = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
+        avg_loss, train_preds, train_labels = train_fn(train_loader, weight_model, criterion, optimizer, epoch, scheduler, config.device)
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
 
         # scheduler
@@ -152,7 +154,7 @@ def main():
         elapsed = time.time() - start_time
         print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}, train accuracy: {train_score},  time: {elapsed:.0f}s')
 
-        torch.save(model.state_dict(), 
+        torch.save(weight_model.state_dict(), 
             join(config.model_base_path, 'ensemble_weight', f'{config.epochs}.pth'))
 
 # run

@@ -63,7 +63,7 @@ def inference(model_list, test_loader, device):
         if config.ensemble_method == "mean":
             avg_preds = torch.mean(torch.stack(avg_preds), dim=0)
         else:
-            avg_preds = weight_model(torch.stack(avg_preds, dim=1))
+            avg_preds = weight_model(torch.stack(avg_preds, dim=1).to(device=config.device)).to('cpu')
 
         probs.append(avg_preds)
 
