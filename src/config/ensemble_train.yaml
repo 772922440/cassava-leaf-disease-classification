@@ -4,7 +4,7 @@ k_folds: 5
 backbone: 'mobilenetv3_large_100'
 optimizer: AdamW
 lr: 1e-3
-min_lr: 1e-4
+min_lr: 1e-5
 weight_decay: 1e-4
 batch_size: 32
 epochs: 20
@@ -12,7 +12,7 @@ max_grad_norm: 10
 print_freq: 100
 
 transform: "strong"
-p: 0.8 # for transform
+p: 0.9 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 amp: False
