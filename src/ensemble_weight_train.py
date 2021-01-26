@@ -29,18 +29,26 @@ torch_utils.seed_torch(seed=config.seed)
 
 print(config)
 
+class EnsembleWeight(nn.Module):
+    def __init__(self, model_size = 5, target_size = 5):
+        super().__init__()
+        self.w = nn.Parameter(torch.randn(model_size, target_size))
 
-def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device):
+    def forward(self, x): 
+        # b, model, cls
+        x = torch.sum(self.w.abs() * x, dim=1)
+        x = torch.softmax(x, dim=-1)
+        return x
+
+
+def train_fn(train_loader, weight_model, criterion, optimizer, epoch, scheduler, device):
     batch_time = utils.AverageMeter()
     data_time =  utils.AverageMeter()
     losses =  utils.AverageMeter()
     scores =  utils.AverageMeter()
 
-    if config.amp:
-        scaler = GradScaler()
-
     # switch to train mode
-    model.train()
+    weight_model.train()
     preds = []
     preds_labels = []
     start = end = time.time()
@@ -52,14 +60,24 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         labels = labels.to(device)
         batch_size = labels.size(0)
 
-        # forward
-        if config.amp:
-            with autocast():
-                y_preds = model(images)
-                loss = criterion(y_preds, labels)
-        else:
-            y_preds = model(images)
-            loss = criterion(y_preds, labels)
+        # backbone forward
+        probs = []
+        with torch.no_grad():
+            for m in config.model_list:
+                backbone = m['backbone']
+                model = get_backbone(backbone, config).to(device=config.device)
+                model.eval()
+
+                for filename in m['filename']:
+                    model_path = join(config.model_base_path, backbone, filename)
+                    model.load_state_dict(torch.load(model_path))
+                    prob = model(images).softmax(dim=-1) # b, cls
+                    probs.append(prob)
+        probs = torch.stack(probs, dim=1) # b, models, cls
+
+        # mixer forward
+        y_preds = weight_model(probs)
+        loss = criterion(y_preds, labels)
 
         # record accuracy
         preds.append(y_preds.softmax(dim=-1).to('cpu'))
@@ -67,18 +85,10 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         # record loss
         losses.update(loss.item(), batch_size)
 
-        if config.amp:
-            optimizer.zero_grad()
-            scaler.scale(loss).backward()
-            scaler.unscale_(optimizer)
-            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            optimizer.zero_grad()
-            loss.backward()
-            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
-            optimizer.step()
+        optimizer.zero_grad()
+        loss.backward()
+        grad_norm = torch.nn.utils.clip_grad_norm_(weight_model.parameters(), config.max_grad_norm)
+        optimizer.step()
 
         global_step += 1
         # measure elapsed time
@@ -102,18 +112,15 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     preds_labels = torch.cat(preds_labels, dim=0)
     return losses.avg, preds, preds_labels
 
-def main():
-    # train k fold
-    if 'k' not in config or config.k < 0 or config.k >= config.k_folds:
-        print("please input correct k fold.(ensemble_train.py name=ensemble_train k=xxx)")
-        return 1
 
+def main():
     # output dir
-    utils.mkdir(join(config.model_base_path, config.backbone))
+    utils.mkdir(join(config.model_base_path, 'ensemble_weight'))
 
     # init model
-    transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
-    model = get_backbone(config.backbone, config).to(device=config.device)
+    transform_train = ld.get_albu_transform(config.transform, config)[0]
+    model_size = sum(len(m['filename']) for m in config.model_list)
+    model = EnsembleWeight(model_size, config.target_size).to(device=config.device)
 
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
@@ -122,51 +129,31 @@ def main():
     criterion = cls_loss.get_criterion(config.criterion, config)
     print(f'Criterion: {criterion}')
 
-    # split train valid
+    # train data
     train = pd.read_csv(join(config.data_base_path, str(config.k_folds) + 'folds.csv'))
     train['filepath'] = train.image_id.apply(lambda x: join(config.data_base_path, config.train_images, f'{x}'))
-    valid = train[train.fold == config.k].reset_index(drop=True)
-    train = train[train.fold != config.k].reset_index(drop=True)
 
     # loader
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
                             num_workers=config.num_workers, pin_memory=True, drop_last=False)
 
-    valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
-    valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False,
-                            num_workers=config.num_workers, pin_memory=True, drop_last=False)
-
     # train epochs
-    best_score = 0.
-    best_epoch = 0
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
         avg_loss, train_preds, train_labels = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
 
-        # eval
-        avg_val_loss, val_preds = valid_fn(valid_loader, model, criterion, config.device)
-        valid_labels = valid[config.target_col].values
-        val_score = accuracy_score(valid_labels, val_preds.argmax(dim=-1))
-
         # scheduler
-        torch_utils.scheduler_step(scheduler, avg_val_loss)
+        torch_utils.scheduler_step(scheduler, None)
         
         # log
         elapsed = time.time() - start_time
-        print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
-        print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
+        print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}, train accuracy: {train_score},  time: {elapsed:.0f}s')
 
-        if val_score > best_score:
-            best_score = val_score
-            best_epoch = epoch+1
-            print(f'Epoch {epoch+1} - Save Best Score: {best_score:.4f} Model')
-            torch.save(model.state_dict(), 
-                join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
-
-    print(f'Best Epoch: {best_epoch} Best Score: {best_score:.4f}')
+        torch.save(model.state_dict(), 
+            join(config.model_base_path, 'ensemble_weight', f'{config.epochs}.pth'))
 
 # run
 main()

@@ -13,6 +13,7 @@ warnings.filterwarnings('ignore')
 from utils import utils, torch_utils
 from dataset import leafdisease as ld
 from model import get_backbone
+from ensemble_weight_train import EnsembleWeight
 
 # read config
 config = utils.read_all_config()
@@ -29,6 +30,12 @@ transforms = ld.get_albu_transform("default", config)[1]
 test_dataset = ld.CLDDataset(test, 'test', transform=transforms)
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers)
+
+# learned weight
+if config.ensemble_method == "learned":
+    model_size = sum(len(m['filename']) for m in config.model_list)
+    weight_model = EnsembleWeight(model_size, config.target_size).to(device=config.device)
+    weight_model.eval()
 
 
 def inference(model_list, test_loader, device):
@@ -53,7 +60,11 @@ def inference(model_list, test_loader, device):
                 avg_preds.append(y_preds.softmax(dim=-1).to('cpu'))
 
         # simple mean weights
-        avg_preds = torch.mean(torch.stack(avg_preds), dim=0)
+        if config.ensemble_method == "mean":
+            avg_preds = torch.mean(torch.stack(avg_preds), dim=0)
+        else:
+            avg_preds = weight_model(torch.stack(avg_preds, dim=1))
+
         probs.append(avg_preds)
 
     probs = torch.cat(probs, dim=0)

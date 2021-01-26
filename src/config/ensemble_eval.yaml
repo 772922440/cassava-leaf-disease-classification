@@ -1,7 +1,5 @@
 # predict csv path
 output_dir: "../result"
-
-batch_size: 32
 ensemble_method: 'mean'
 
 # models list
@@ -13,3 +11,19 @@ model_list:
       - 'fold2_best.pth'
       - 'fold3_best.pth'
       - 'fold4_best.pth'
+
+# for train ensemble weights
+k_folds: 5
+batch_size: 64
+print_freq: 100
+
+transform: "strong"
+p: 0.9 # for transform
+criterion: CrossEntropyLoss
+scheduler: CosineAnnealingLR
+optimizer: AdamW
+epochs: 10
+min_lr: 1e-5
+lr: 1e-3
+weight_decay: 1e-4
+max_grad_norm: 10
