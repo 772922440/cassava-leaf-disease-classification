@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
 import os 
-from utils.utils import save_checkpoint, load_checkpoint 
+from utils.utils import save_checkpoint, load_checkpoint, save_results
 import pickle
 from efficientnet_pytorch import EfficientNet
 
@@ -108,6 +108,7 @@ def train(args, train_loader, valid_loader):
         acc = correct / len(valid_loader.dataset)
 
         print('\t Train Loss:{:.4f} , \t val Loss:{:.4f} \t Train_acc:{:.4f}, \tVal_acc:{:.4f} \n'.format(train_loss, valid_loss, train_acc , acc))
+        save_results(epoch, train_loss.item(), valid_loss.item(), train_acc , acc, './results/', args.save_filename)
 
         if acc > best_acc :
 

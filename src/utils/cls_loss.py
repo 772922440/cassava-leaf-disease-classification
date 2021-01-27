@@ -25,7 +25,7 @@ def get_criterion(criterion, config):
 class LabelSmoothingLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, dim=-1): 
         super(LabelSmoothingLoss, self).__init__() 
-        self.confidence = 1.0 - smoothing 
+        self.confidence = 1.0
         self.smoothing = smoothing 
         self.cls = classes 
         self.dim = dim 
