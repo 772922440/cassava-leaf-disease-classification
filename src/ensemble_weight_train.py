@@ -162,7 +162,7 @@ def main():
             best_epoch = epoch
             print(f'Epoch {best_epoch+1} - Save bese train accuracy: {best_train_score}')
             torch.save(weight_model.state_dict(), 
-                join(config.model_base_path, 'ensemble_weight', f'{config.epochs}.pth'))
+                join(config.model_base_path, 'ensemble_weight', f'best.pth'))
 
     print(f'Epoch {best_epoch+1} - Best train accuracy: {best_train_score}')
 
