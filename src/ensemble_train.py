@@ -178,6 +178,7 @@ def main():
 
     # train epochs
     best_score = 0.
+    best_train_score = 0.
     best_epoch = 0
     for epoch in range(config.epochs):
         start_time = time.time()
@@ -200,14 +201,15 @@ def main():
 
         if val_score > best_score:
             best_score = val_score
+            best_train_score = train_score
             best_epoch = epoch+1
-            print(f'Epoch {epoch+1} - Save Best Score: {best_score:.4f} Model')
+            print(f'Epoch {epoch+1} - Train Score{best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
     # 最终结果
     print(config)
-    print(f'Best Epoch: {best_epoch} Best Score: {best_score:.4f}')
+    print(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}')
 
 # run
 main()
