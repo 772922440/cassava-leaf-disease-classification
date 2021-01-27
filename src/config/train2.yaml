@@ -1,0 +1,20 @@
+# split train.csv
+k_folds: 5
+
+backbone: 'tf_efficientnet_b3'
+lr: 1e-3
+min_lr: 1e-4
+weight_decay: 1e-4
+batch_size: 32
+epochs: 50
+max_grad_norm: 10
+print_freq: 100
+
+criterion: 'CrossEntropyLoss'
+scheduler: 'CosineAnnealingLR'
+amp: False
+
+transform: "strong"
+p: 0.9 # for tansform
+
+save_filename: 'test'
