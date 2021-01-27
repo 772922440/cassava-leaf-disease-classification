@@ -231,7 +231,10 @@ def main():
         elapsed = time.time() - start_time
         print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
         print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
-        utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
+
+        # for cc
+        if config.save_filename:
+            utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
 
         if val_score > best_score:
             best_score = val_score
