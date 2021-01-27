@@ -4,7 +4,7 @@ ensemble_method: 'mean'
 
 # models list
 model_list: 
-  - backbone: 'mobilenetv3_large_100'
+  - backbone: 'tf_efficientnet_b3'
     filename:
       - 'fold0_best.pth'
       - 'fold1_best.pth'
@@ -13,7 +13,7 @@ model_list:
       - 'fold4_best.pth'
 
 # for train ensemble weights
-print_freq: 40
+print_freq: 100
 batch_size: 64
 transform: "strong"
 p: 0.9 # for transform
