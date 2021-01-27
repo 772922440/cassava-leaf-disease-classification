@@ -176,15 +176,17 @@ def main():
     transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
     model = get_backbone(config.backbone, config).to(device=config.device)
 
+    # data parallel, CUDA_VISIBLE_DEVICES=0,1 控制gpu选择
+    if config.data_parallel:
+        model = nn.DataParallel(model)
+
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
 
     if apex_support and config.apex:
-
         print("\t[Info] Use fp16_precision")
         model, optimizer = amp.initialize(model, optimizer,
             opt_level='O1', keep_batchnorm_fp32=True, verbosity=0)
-
 
 
     config.T_max = config.epochs
