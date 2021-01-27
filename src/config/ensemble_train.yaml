@@ -16,3 +16,4 @@ p: 0.9 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 amp: False
+apex: False

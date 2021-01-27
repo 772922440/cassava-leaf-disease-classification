@@ -27,6 +27,15 @@ config = utils.read_all_config()
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
 
+
+try:
+    from apex import amp
+    apex_support = True
+except:
+    print("\t[Info] apex is not supported")
+    apex_support = False 
+
+
 print(config)
 
 
@@ -39,12 +48,15 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     if config.amp:
         scaler = GradScaler()
 
+
     # switch to train mode
     model.train()
     preds = []
     preds_labels = []
     start = end = time.time()
     global_step = 0
+
+
     for step, (images, labels) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
@@ -57,6 +69,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             with autocast():
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
+
         else:
             y_preds = model(images)
             loss = criterion(y_preds, labels)
@@ -74,6 +87,18 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
             scaler.step(optimizer)
             scaler.update()
+
+        elif config.apex and apex_support:
+            optimizer.zero_grad()    
+
+            with amp.scale_loss(loss, optimizer) as scaled_loss:
+                
+                scaled_loss.backward()
+
+                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+                # scaled_loss.step(optimizer)
+            optimizer.step()
+
         else:
             optimizer.zero_grad()
             loss.backward()
@@ -156,6 +181,15 @@ def main():
 
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
+
+    if config.apex and apex_support:
+
+        print("\t[Info] Use fp16_precision")
+        model, optimizer = amp.initialize(model, optimizer,
+            opt_level='O2', keep_batchnorm_fp32=True, verbosity=0)
+
+
+
     config.T_max = config.epochs
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
     criterion = cls_loss.get_criterion(config.criterion, config)
