@@ -11,8 +11,8 @@ epochs: 20
 max_grad_norm: 10
 print_freq: 100
 
-transform: "strong"
-p: 0.9 # for transform
+transform: "strong_fix"
+p: 1 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 amp: False
