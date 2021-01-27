@@ -142,6 +142,8 @@ def main():
                             num_workers=config.num_workers, pin_memory=True, drop_last=False)
 
     # train epochs
+    best_train_score = 0.
+    best_epoch = 0
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
@@ -155,8 +157,14 @@ def main():
         elapsed = time.time() - start_time
         print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}, train accuracy: {train_score},  time: {elapsed:.0f}s')
 
-        torch.save(weight_model.state_dict(), 
-            join(config.model_base_path, 'ensemble_weight', f'{config.epochs}.pth'))
+        if train_score > best_train_score:
+            best_train_score = train_score
+            best_epoch = epoch
+            print(f'Epoch {best_epoch+1} - Save bese train accuracy: {best_train_score}')
+            torch.save(weight_model.state_dict(), 
+                join(config.model_base_path, 'ensemble_weight', f'{config.epochs}.pth'))
+
+    print(f'Epoch {best_epoch+1} - Best train accuracy: {best_train_score}')
 
 # run
 main()
