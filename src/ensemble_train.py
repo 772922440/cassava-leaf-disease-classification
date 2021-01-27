@@ -203,7 +203,7 @@ def main():
     # loader
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
-                            num_workers=config.num_workers, pin_memory=True, drop_last=False)
+                            num_workers=config.num_workers, pin_memory=True, drop_last=True)
 
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
     valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False,
