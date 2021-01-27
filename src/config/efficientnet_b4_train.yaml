@@ -8,7 +8,7 @@ image_size: 512
 epochs: 20
 min_lr: 1e-5
 lr: 1e-3
-weight_decay: 4e-4
+weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
 
