@@ -1,4 +1,4 @@
-name: dlcv
+name: leaf_d
 channels:
   - pytorch
   - defaults

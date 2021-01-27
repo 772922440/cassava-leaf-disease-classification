@@ -41,6 +41,8 @@ def parse_args(string=None):
     parser.add_argument('--DataAugmentationStrong', type=bool, default=False,
                         help='Strong Data Augmentation ')
 
+    parser.add_argument('--save_filename', type=str, default='result')
+
 
     if string is not None: args = parser.parse_args(string)  
     else: args = parser.parse_args()
