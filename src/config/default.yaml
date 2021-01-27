@@ -17,3 +17,12 @@ target_size: 5 # network output size
 image_size: 512
 seed: 2020
 num_workers: 8
+
+optimizer: AdamW
+
+save_filename: 'res_crossentropy'
+data_parallel: False
+
+smoothing: 0.0
+t1: 0.7
+t2: 1.3
