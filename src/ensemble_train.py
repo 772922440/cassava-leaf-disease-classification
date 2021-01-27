@@ -241,21 +241,21 @@ def main():
             best_score = val_score
             best_train_score = train_score
             best_epoch = epoch+1
-            best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1))
+            best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1), normalize='all')
 
-            print(f'Epoch {epoch+1} - Train Score{best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
+            print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
     # print final log
     print(config)
-    print(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}')
+    print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
     print(best_confusion_matrix)
 
     # write final log
     with open(join(config.model_base_path, config.backbone, f'fold{config.k}_log.txt'), 'w') as f:
         f.write(str(config) + "\n")
-        f.write(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
+        f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
         f.write(str(best_confusion_matrix) + "\n")
 # run
 main()
