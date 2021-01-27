@@ -88,13 +88,10 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             scaler.step(optimizer)
             scaler.update()
 
-        elif config.apex and apex_support:
+        elif apex_support and config.apex:
             optimizer.zero_grad()    
-
             with amp.scale_loss(loss, optimizer) as scaled_loss:
-                
                 scaled_loss.backward()
-
                 grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
                 # scaled_loss.step(optimizer)
             optimizer.step()
@@ -182,11 +179,11 @@ def main():
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
 
-    if config.apex and apex_support:
+    if apex_support and config.apex:
 
         print("\t[Info] Use fp16_precision")
         model, optimizer = amp.initialize(model, optimizer,
-            opt_level='O2', keep_batchnorm_fp32=True, verbosity=0)
+            opt_level='O1', keep_batchnorm_fp32=True, verbosity=0)
 
 
 
