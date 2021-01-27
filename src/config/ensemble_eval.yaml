@@ -21,7 +21,7 @@ criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 optimizer: AdamW
 epochs: 10
-min_lr: 1e-4
-lr: 1e-2
-weight_decay: 1e-5
+min_lr: 1e-5
+lr: 1e-3
+weight_decay: 1e-4
 max_grad_norm: 10

@@ -162,7 +162,7 @@ def main():
         if train_score > best_train_score:
             best_train_score = train_score
             best_epoch = epoch
-            best_weight = torch.softmax(weight_model.w, dim=0)
+            best_weight = weight_model.w.data
             
             print(f'Epoch {best_epoch+1} - Save bese train accuracy: {best_train_score}')
             print(best_weight)
