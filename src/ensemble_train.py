@@ -180,12 +180,15 @@ def main():
     utils.mkdir(join(config.model_base_path, config.backbone))
 
     # init model
+
+    if config.data_parallel:
+        os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
+        model = nn.DataParallel(model)
+
     transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
     model = get_backbone(config.backbone, config).to(device=config.device)
 
     # data parallel, CUDA_VISIBLE_DEVICES=0,1 控制gpu选择
-    if config.data_parallel:
-        model = nn.DataParallel(model)
 
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
