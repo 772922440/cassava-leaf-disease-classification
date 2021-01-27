@@ -51,7 +51,7 @@ class DotDict(dict):
                     self.__setattr__(k, DotDict(v))
 
     def __getattr__(self, attr):
-        return self.get(attr, default=None)
+        return self.get(attr, False)
 
     def __setattr__(self, key, value):
         self.__setitem__(key, value)
