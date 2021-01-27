@@ -247,15 +247,15 @@ def main():
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
-    # 最终结果
+    # print final log
     print(config)
     print(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}')
     print(best_confusion_matrix)
 
-    # 写入到文件
+    # write final log
     with open(join(config.model_base_path, config.backbone, f'fold{config.k}_log.txt'), 'w') as f:
-        f.write(str(config))
-        f.write(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}')
-        f.write(str(best_confusion_matrix))
+        f.write(str(config) + "\n")
+        f.write(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
+        f.write(str(best_confusion_matrix) + "\n")
 # run
 main()
