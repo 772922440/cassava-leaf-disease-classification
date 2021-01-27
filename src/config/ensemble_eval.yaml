@@ -22,6 +22,6 @@ scheduler: CosineAnnealingLR
 optimizer: AdamW
 epochs: 10
 min_lr: 1e-4
-lr: 5e-3
+lr: 1e-2
 weight_decay: 1e-5
 max_grad_norm: 10

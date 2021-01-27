@@ -34,11 +34,12 @@ class EnsembleWeight(nn.Module):
     def __init__(self, model_size = 5, target_size = 5):
         super().__init__()
         self.w = nn.Parameter(torch.empty(model_size, target_size))
-        init.constant_(self.w, 1e-4)
+        # init.constant_(self.w, 1e-4)
+        init.constant_(self.w, 0.1 / model_size)
 
     def forward(self, x): 
         # b, model, cls
-        x = torch.sum(torch.softmax(self.w, dim=0) * x, dim=1)
+        x = torch.sum(self.w * x, dim=1)
         x /= x.sum(dim=-1, keepdim=True).detach()
         return x
 
@@ -110,7 +111,7 @@ def train_fn(train_loader, weight_model, criterion, optimizer, epoch, scheduler,
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
                    ))
-            print(torch.softmax(weight_model.w, dim=0))
+            print(weight_model.w)
     preds = torch.cat(preds, dim=0)
     preds_labels = torch.cat(preds_labels, dim=0)
     return losses.avg, preds, preds_labels
