@@ -144,6 +144,7 @@ def main():
     # train epochs
     best_train_score = 0.
     best_epoch = 0
+    best_weight = torch.softmax(weight_model.w, dim=0)
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
@@ -160,11 +161,15 @@ def main():
         if train_score > best_train_score:
             best_train_score = train_score
             best_epoch = epoch
+            best_weight = torch.softmax(weight_model.w, dim=0)
+            
             print(f'Epoch {best_epoch+1} - Save bese train accuracy: {best_train_score}')
+            print(best_weight)
             torch.save(weight_model.state_dict(), 
                 join(config.model_base_path, 'ensemble_weight', f'best.pth'))
 
     print(f'Epoch {best_epoch+1} - Best train accuracy: {best_train_score}')
+    print(best_weight)
 
 # run
 main()
