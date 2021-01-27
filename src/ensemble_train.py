@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
-from torch.cuda.amp import autocast, GradScaler
+
 
 import warnings 
 warnings.filterwarnings('ignore')
@@ -26,6 +26,13 @@ from model import get_backbone
 config = utils.read_all_config()
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
+
+
+try:
+    from torch.cuda.amp import autocast, GradScaler
+    print('amp is supported')
+except:
+    print('amp is not supported')
 
 
 try:
