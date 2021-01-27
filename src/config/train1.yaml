@@ -2,6 +2,7 @@
 k_folds: 5
 
 backbone: 'resnext50_32x4d'
+optimizer: AdamW
 lr: 1e-3
 min_lr: 1e-4
 weight_decay: 1e-4
@@ -18,3 +19,8 @@ transform: "strong"
 p: 0.9 # for tansform
 
 save_filename: 'res_crossentropy'
+data_parallel: False
+
+smoothing: 0.0
+t1: 0.7
+t2: 1.3
