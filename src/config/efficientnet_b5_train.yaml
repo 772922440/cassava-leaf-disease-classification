@@ -1,9 +1,9 @@
 # split train.csv
 k_folds: 5
 
-backbone: tf_efficientnet_b6
+backbone: tf_efficientnet_b5
 optimizer: AdamW
-batch_size: 30
+batch_size: 32
 epochs: 20
 min_lr: 1e-5
 lr: 1e-3
