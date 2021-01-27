@@ -3,8 +3,8 @@ k_folds: 5
 
 backbone: tf_efficientnet_b4
 optimizer: AdamW
-batch_size: 28
-image_size: 496
+batch_size: 26
+image_size: 512
 epochs: 20
 min_lr: 1e-5
 lr: 1e-3
@@ -13,7 +13,7 @@ max_grad_norm: 10
 print_freq: 100
 
 transform: "strong_fix"
-p: 0.95 # for transform
+p: 1 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
 amp: False

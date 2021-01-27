@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 from tqdm.auto import tqdm
 
 import torch
@@ -203,7 +203,7 @@ def main():
     # loader
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
-                            num_workers=config.num_workers, pin_memory=True, drop_last=False)
+                            num_workers=config.num_workers, pin_memory=True, drop_last=True)
 
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
     valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False,
@@ -213,6 +213,7 @@ def main():
     best_score = 0.
     best_train_score = 0.
     best_epoch = 0
+    best_confusion_matrix = []
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
@@ -231,19 +232,30 @@ def main():
         elapsed = time.time() - start_time
         print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
         print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
-        utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
+
+        # for cc
+        if config.save_filename:
+            utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
 
         if val_score > best_score:
             best_score = val_score
             best_train_score = train_score
             best_epoch = epoch+1
-            print(f'Epoch {epoch+1} - Train Score{best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
+            best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1), normalize='all')
+
+            print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
             torch.save(model.state_dict(), 
                 join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
-    # 最终结果
+    # print final log
     print(config)
-    print(f'Best Epoch: {best_epoch}, Train Score{best_train_score:.4f}:, Best Score: {best_score:.4f}')
+    print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
+    print(best_confusion_matrix)
 
+    # write final log
+    with open(join(config.model_base_path, config.backbone, f'fold{config.k}_log.txt'), 'w') as f:
+        f.write(str(config) + "\n")
+        f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
+        f.write(str(best_confusion_matrix) + "\n")
 # run
 main()
