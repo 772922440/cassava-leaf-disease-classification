@@ -2,8 +2,8 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b6
-optimizer: AdamP
-batch_size: 32
+optimizer: AdamW
+batch_size: 30
 epochs: 20
 min_lr: 1e-5
 lr: 1e-3
