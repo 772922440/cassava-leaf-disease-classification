@@ -10,12 +10,18 @@ from tqdm.auto import tqdm
 
 import torch
 import torch.nn as nn
-from torch.optim import AdamW
 from torch.utils.data import DataLoader
-
+from torch.cuda.amp import autocast, GradScaler
 
 import warnings 
 warnings.filterwarnings('ignore')
+
+try:
+    from apex import amp
+    apex_support = True
+except:
+    print("\t[Info] apex is not supported")
+    apex_support = False 
 
 # our codes
 from utils import utils, torch_utils, cls_loss, optim
@@ -26,22 +32,6 @@ from model import get_backbone
 config = utils.read_all_config()
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
-
-
-try:
-    from torch.cuda.amp import autocast, GradScaler
-    print('amp is supported')
-except:
-    print('amp is not supported')
-
-
-try:
-    from apex import amp
-    apex_support = True
-except:
-    print("\t[Info] apex is not supported")
-    apex_support = False 
-
 
 print(config)
 
@@ -55,14 +45,12 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     if config.amp:
         scaler = GradScaler()
 
-
     # switch to train mode
     model.train()
     preds = []
     preds_labels = []
     start = end = time.time()
     global_step = 0
-
 
     for step, (images, labels) in enumerate(train_loader):
         # measure data loading time
@@ -76,7 +64,6 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             with autocast():
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
-
         else:
             y_preds = model(images)
             loss = criterion(y_preds, labels)
@@ -180,24 +167,21 @@ def main():
     utils.mkdir(join(config.model_base_path, config.backbone))
 
     # init model
-
-    if config.data_parallel:
-        os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
-        model = nn.DataParallel(model)
-
     transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
     model = get_backbone(config.backbone, config).to(device=config.device)
 
-    # data parallel, CUDA_VISIBLE_DEVICES=0,1 控制gpu选择
+    # data parallel
+    if config.data_parallel:
+        model = nn.DataParallel(model, device_ids=map(int, config.data_parallel_gpus.split(',')))
 
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
 
+    # apex
     if apex_support and config.apex:
         print("\t[Info] Use fp16_precision")
         model, optimizer = amp.initialize(model, optimizer,
             opt_level='O1', keep_batchnorm_fp32=True, verbosity=0)
-
 
     config.T_max = config.epochs
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
@@ -243,7 +227,8 @@ def main():
         print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
         print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
 
-        # maybe need to be deleted
+        # TODO: maybe need to be deleted
+        # we have saved last record to model file path
         if config.save_filename:
             utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
 

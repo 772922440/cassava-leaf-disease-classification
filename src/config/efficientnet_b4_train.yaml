@@ -16,6 +16,8 @@ transform: "strong_fix"
 p: 1 # for transform
 criterion: CrossEntropyLoss
 scheduler: CosineAnnealingLR
+
 amp: False
 apex: False
 data_parallel: False
+data_parallel_gpus: 4,5,6,7

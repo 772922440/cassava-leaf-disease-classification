@@ -17,6 +17,9 @@ target_size: 5 # network output size
 image_size: 512
 seed: 2020
 num_workers: 8
-data_parallel: False
 
-# 这里最好不要加东西，默认不存在的 key 会获取 False
+# set data parallel gpus
+data_parallel: False
+data_parallel_gpus: 4,5,6,7
+amp: False
+apex: False
