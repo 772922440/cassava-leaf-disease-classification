@@ -23,4 +23,4 @@ folds['fold'] = folds['fold'].astype(int)
 print(folds.groupby(['fold', config.target_col]).size())
 
 folds[['image_id', 'label', 'fold']] \
-    .to_csv(join(config.data_base_path, str(config.k_folds) + 'folds.csv'), index=False)
+    .to_csv(join(config.data_base_path, config.k_folds_csv), index=False)

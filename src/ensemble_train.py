@@ -189,7 +189,7 @@ def main():
     print(f'Criterion: {criterion}')
 
     # split train valid
-    train = pd.read_csv(join(config.data_base_path, str(config.k_folds) + 'folds.csv'))
+    train = pd.read_csv(join(config.data_base_path, config.k_folds_csv))
     train['filepath'] = train.image_id.apply(lambda x: join(config.data_base_path, config.train_images, f'{x}'))
     valid = train[train.fold == config.k].reset_index(drop=True)
     train = train[train.fold != config.k].reset_index(drop=True)
