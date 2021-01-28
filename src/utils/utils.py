@@ -161,6 +161,7 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (remain %s)' % (asMinutes(s), asMinutes(rs))
 
+# TODO: may need to be deleted
 def save_results(epoch_num, train_loss, val_loss, train_acc , val_acc, file_dir, file_name):
     os.makedirs(file_dir, exist_ok=True)
     path = os.path.join(file_dir, '{}.csv'.format(file_name))
