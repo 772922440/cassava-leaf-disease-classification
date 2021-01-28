@@ -13,7 +13,7 @@ print_freq: 100
 
 transform: "strong_fix"
 p: 0.9 # for transform
-criterion: LabelSmoothingLoss
+criterion: LabelSmoothing
 smoothing: 0.1
 scheduler: CosineAnnealingLR
 
