@@ -171,7 +171,8 @@ def main():
 
     # data parallel
     if config.data_parallel:
-        model = nn.DataParallel(model, device_ids=map(int, config.data_parallel_gpus.split(',')))
+        device_ids = list(map(int, config.data_parallel_gpus.split(',')))
+        model = nn.DataParallel(model, device_ids=device_ids)
 
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
