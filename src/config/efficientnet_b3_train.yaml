@@ -2,7 +2,7 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: AdamW
+optimizer: AdamP
 batch_size: 32
 epochs: 20
 min_lr: 1e-5
@@ -11,9 +11,10 @@ weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
 
-transform: "strong"
+transform: "strong_fix"
 p: 0.9 # for transform
-criterion: CrossEntropyLoss
+criterion: LabelSmoothingLoss
+smoothing: 0.1
 scheduler: CosineAnnealingLR
 
 amp: False
