@@ -167,7 +167,6 @@ def main():
     utils.mkdir(join(config.model_base_path, config.backbone))
 
     # init model
-    transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
     model = get_backbone(config.backbone, config).to(device=config.device)
 
     # data parallel
@@ -195,6 +194,8 @@ def main():
     train = train[train.fold != config.k].reset_index(drop=True)
 
     # loader
+    transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
+
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
                             num_workers=config.num_workers, pin_memory=True, drop_last=True)
