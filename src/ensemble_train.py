@@ -251,7 +251,7 @@ def main():
             best_score = val_score
             best_train_score = train_score
             best_epoch = epoch+1
-            best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1), normalize='all')
+            best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1))
 
             print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
             torch.save(model.state_dict(), 
