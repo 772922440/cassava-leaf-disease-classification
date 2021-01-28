@@ -13,7 +13,11 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.cuda.amp import autocast, GradScaler
 
-import warnings 
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data.distributed import DistributedSampler
+from torch.autograd import Variable 
+
+import warnings
 warnings.filterwarnings('ignore')
 
 try:
@@ -35,6 +39,13 @@ torch_utils.seed_torch(seed=config.seed)
 
 print(config)
 
+
+if config.DDP:
+    # Init
+    torch.distributed.init_process_group(backend="nccl")
+    local_rank = torch.distributed.get_rank()
+    torch.cuda.set_device(local_rank)
+    config.device = torch.device( "cuda", local_rank)
 
 def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device):
     batch_time = utils.AverageMeter()
@@ -174,6 +185,11 @@ def main():
         device_ids = list(map(int, config.data_parallel_gpus.split(',')))
         model = nn.DataParallel(model, device_ids=device_ids)
 
+    if config.DDP:
+        print(f"Use DPP, You have {torch.cuda.device_count} GPUs")
+        model = DDP(model, device_ids=[local_rank], output_device=local_rank)
+
+
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
 
@@ -198,13 +214,16 @@ def main():
     transform_train, transform_valid = ld.get_albu_transform(config.transform, config)
 
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
-    train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
-                            num_workers=config.num_workers, pin_memory=True, drop_last=True)
-
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
-    valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False,
-                            num_workers=config.num_workers, pin_memory=True, drop_last=False)
 
+
+    if config.DDP:
+        train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True, sampler=DistributedSampler(train_dataset))
+        valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False, sampler=DistributedSampler(valid_dataset))
+
+    else:
+        train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False)
     # train epochs
     best_score = 0.
     best_train_score = 0.
