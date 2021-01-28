@@ -11,7 +11,7 @@ weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
 
-transform: "strong_fix"
+transform: "strong"
 p: 0.9 # for transform
 criterion: LabelSmoothing
 smoothing: 0.1
