@@ -5,17 +5,32 @@
 #######################################
 
 # Try SGD or Ranger
-echo "###################  SGD    ###############################"
-python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=20 optimizer=SGD backbone=mobilenetv3_large_100
-echo "####################    Ranger   ###################################"
-python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=20 optimizer=SGD backbone=mobilenetv3_large_100
 
+echo "###################  Begin    ###############################"
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3
+echo "###################  AdamW    ###############################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=SGD backbone=tf_efficientnet_b3
+echo "###################  SGD    ###############################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=Ranger backbone=tf_efficientnet_b3
+echo "####################    Ranger   ###################################"
 #Try p
-echo "######################  p=0.04   #####################################"
-python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=20 optimizer=SGD backbone=mobilenetv3_large_100 p=0.04
-echo "######################## p=0.06   ####################################"
-python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=20 optimizer=SGD backbone=mobilenetv3_large_100 p=0.06
-echo "######################## p=0.03  ####################################"
-python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=20 optimizer=SGD backbone=mobilenetv3_large_100 p=0.03
-echo "######################## p=0.07   ####################################"
-python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=20 optimizer=SGD backbone=mobilenetv3_large_100 p=0.07
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3 p=0.1
+echo "######################  p=0.1   #####################################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3 p=0.4
+echo "######################  p=0.4   #####################################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3 p=0.6
+echo "######################## p=0.6   ####################################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3 p=0.3
+echo "######################## p=0.3  ####################################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3 p=0.7
+echo "######################## p=0.7   ####################################"
+
+python3 ensemble_train.py name=efficientnet_b3_train_smooth_P  k=4 lr=0.001 batch_size=32 optimizer=AdamW backbone=tf_efficientnet_b3 p=0.8
+echo "######################## p=0.8   ####################################"
