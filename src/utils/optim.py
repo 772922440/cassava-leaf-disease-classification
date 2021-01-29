@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from torch.optim.optimizer import Optimizer, required
 import math
 
+
 def get_optimizer(opt, config, parameters):
     if opt=='Adam':
         opt = optim.Adam(parameters, lr=config.lr, weight_decay=config.weight_decay)
@@ -18,6 +19,26 @@ def get_optimizer(opt, config, parameters):
                 momentum=config.momentum, 
                 weight_decay=config.weight_decay,
                 nesterov=True)
+    elif opt =='Ranger':
+
+        try:
+            from ranger import Ranger # from ranger import RangerVA  from ranger import RangerQH 
+            Support_ranger = True
+        except:
+            Support_ranger = False
+
+        if Support_ranger:
+            opt = Ranger(parameters, lr=config.lr)
+            print('Use Ranger')
+        else:
+            print('Not support Ranger. Use SGD')
+            opt = optim.SGD(parameters, 
+                lr = config.lr, 
+                momentum=config.momentum, 
+                weight_decay=config.weight_decay,
+                nesterov=True)
+
+
     else:
         raise "optimizer error"
     return opt
