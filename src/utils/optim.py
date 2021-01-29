@@ -12,6 +12,12 @@ def get_optimizer(opt, config, parameters):
         opt = optim.AdamW(parameters, lr=config.lr, weight_decay=config.weight_decay)
     elif opt == "AdamP":
         opt = AdamP(parameters, lr=config.lr, weight_decay=config.weight_decay)
+    elif opt == "SGD":
+        opt = optim.SGD(parameters, 
+                lr = config.lr, 
+                momentum=config.momentum, 
+                weight_decay=config.weight_decay,
+                nesterov=True)
     else:
         raise "optimizer error"
     return opt
