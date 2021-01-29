@@ -125,6 +125,7 @@ def valid_fn(valid_loader, model, criterion, device):
     # switch to evaluation mode
     model.eval()
     preds = []
+    preds_labels = []
     start = end = time.time()
     for step, (images, labels) in enumerate(valid_loader):
         # measure data loading time
@@ -139,6 +140,7 @@ def valid_fn(valid_loader, model, criterion, device):
         losses.update(loss.item(), batch_size)
         # record accuracy
         preds.append(y_preds.softmax(dim=-1).to('cpu'))
+        preds_labels.append(labels.to('cpu'))
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -153,7 +155,8 @@ def valid_fn(valid_loader, model, criterion, device):
                    remain=utils.timeSince(start, float(step+1)/len(valid_loader)),
                    ))
     predictions = torch.cat(preds, dim=0)
-    return losses.avg, predictions
+    preds_labels = torch.cat(preds_labels, dim=0)
+    return losses.avg, predictions, preds_labels
 
 def main(local_rank=0, world_size=1):
     if local_rank == 0:
@@ -227,9 +230,9 @@ def main(local_rank=0, world_size=1):
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
 
         # eval
-        avg_val_loss, val_preds = valid_fn(valid_loader, model, criterion, config.device)
+        avg_val_loss, val_preds, val_labels = valid_fn(valid_loader, model, criterion, config.device)
         valid_labels = valid[config.target_col].values
-        val_score = accuracy_score(valid_labels, val_preds.argmax(dim=-1))
+        val_score = accuracy_score(valid_labels, val_labels.argmax(dim=-1))
 
         # sync scores
         if config.DDP:
