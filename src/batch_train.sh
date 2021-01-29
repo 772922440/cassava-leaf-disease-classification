@@ -34,6 +34,6 @@ for((i=0;i<k_flods;i++)); do
     if [ $(((i+1) % threads)) -eq 0 ]; then
         wait
     fi
-    sleep 3
+    sleep 1
 done
 wait

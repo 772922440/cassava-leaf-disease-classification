@@ -1,0 +1,22 @@
+# split train.csv
+k_folds: 5
+
+backbone: tf_efficientnet_b3
+optimizer: AdamW
+batch_size: 24
+epochs: 30
+min_lr: 1e-6
+lr: 1e-3
+weight_decay: 2e-4
+max_grad_norm: 10
+print_freq: 100
+
+transform: "strong"
+p: 0.9 # for transform
+criterion: LabelSmoothing
+smoothing: 0.05
+scheduler: CosineAnnealingLR
+
+amp: False
+apex: False
+DDP: True

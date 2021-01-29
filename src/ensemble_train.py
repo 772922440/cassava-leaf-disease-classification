@@ -1,12 +1,9 @@
 from os.path import join
-import math
 import time
-from pathlib import Path
 import numpy as np
 import pandas as pd
 
 from sklearn.metrics import accuracy_score, confusion_matrix
-from tqdm.auto import tqdm
 
 import torch
 import torch.nn as nn
@@ -15,7 +12,7 @@ from torch.cuda.amp import autocast, GradScaler
 
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
-from torch.autograd import Variable 
+import torch.multiprocessing as mp
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -24,11 +21,10 @@ try:
     from apex import amp
     apex_support = True
 except:
-    print("\t[Info] apex is not supported")
     apex_support = False 
 
 # our codes
-from utils import utils, torch_utils, cls_loss, optim
+from utils import utils, torch_utils, cls_loss, optim, dist
 from dataset import leafdisease as ld
 from model import get_backbone
 
@@ -37,15 +33,6 @@ config = utils.read_all_config()
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
 
-print(config)
-
-if config.DDP:
-    # Init
-    torch.distributed.init_process_group(backend="nccl")
-    local_rank = torch.distributed.get_rank()
-    torch.cuda.set_device(local_rank)
-    config.device = torch.device( "cuda", local_rank)
-    
 
 def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device):
     batch_time = utils.AverageMeter()
@@ -168,7 +155,10 @@ def valid_fn(valid_loader, model, criterion, device):
     predictions = torch.cat(preds, dim=0)
     return losses.avg, predictions
 
-def main():
+def main(local_rank=0, world_size=1):
+    if local_rank == 0:
+        print(config)
+
     # train k fold
     if 'k' not in config or config.k < 0 or config.k >= config.k_folds:
         print("please input correct k fold.(ensemble_train.py name=ensemble_train k=xxx)")
@@ -176,6 +166,10 @@ def main():
 
     # output dir
     utils.mkdir(join(config.model_base_path, config.backbone))
+
+    # init dist
+    if config.DDP:
+        dist.setup(local_rank, world_size)
 
     # init model
     model = get_backbone(config.backbone, config).to(device=config.device)
@@ -211,8 +205,12 @@ def main():
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
 
     if config.DDP:
-        train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True, sampler=DistributedSampler(train_dataset))
-        valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False, sampler=DistributedSampler(valid_dataset))
+        train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=False, 
+            num_workers=config.num_workers, pin_memory=True, drop_last=True, 
+            sampler=DistributedSampler(train_dataset, shuffle=True, rank=local_rank))
+        valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, 
+            num_workers=config.num_workers, pin_memory=True, drop_last=False, 
+            sampler=DistributedSampler(valid_dataset, shuffle=True, rank=local_rank))
     else:
         train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True)
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False)
@@ -233,38 +231,55 @@ def main():
         valid_labels = valid[config.target_col].values
         val_score = accuracy_score(valid_labels, val_preds.argmax(dim=-1))
 
+        # sync scores
+        if config.DDP:
+            train_score = dist.all_reduce_mean(train_score, world_size, config.device)
+            val_score = dist.all_reduce_mean(val_score, world_size, config.device)
+            avg_val_loss = dist.all_reduce_mean(avg_val_loss, world_size, config.device)
+
         # scheduler
         torch_utils.scheduler_step(scheduler, avg_val_loss)
         
-        # log
-        elapsed = time.time() - start_time
-        print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
-        print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
+        if local_rank == 0:
+            # log
+            elapsed = time.time() - start_time
+            print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
+            print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
 
-        # TODO: maybe need to be deleted
-        # we have saved last record to model file path
-        if config.save_filename:
-            utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
+            # TODO: maybe need to be deleted
+            # we have saved last record to model file path
+            if config.save_filename:
+                utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
 
-        if val_score > best_score:
-            best_score = val_score
-            best_train_score = train_score
-            best_epoch = epoch+1
-            best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1))
+            if val_score > best_score:
+                best_score = val_score
+                best_train_score = train_score
+                best_epoch = epoch+1
+                best_confusion_matrix = confusion_matrix(valid_labels, val_preds.argmax(dim=-1))
 
-            print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
-            torch.save(model.state_dict(), 
-                join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
+                print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
+                torch.save(model.state_dict(), 
+                    join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
 
-    # print final log
-    print(config)
-    print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
-    print(best_confusion_matrix)
 
-    # write final log
-    with open(join(config.model_base_path, config.backbone, f'fold{config.k}_log.txt'), 'w') as f:
-        f.write(str(config) + "\n")
-        f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
-        f.write(str(best_confusion_matrix) + "\n")
-# run
-main()
+    if local_rank == 0:
+        # print final log
+        print(config)
+        print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
+        print(best_confusion_matrix)
+
+        # write final log
+        with open(join(config.model_base_path, config.backbone, f'fold{config.k}_log.txt'), 'w') as f:
+            f.write(str(config) + "\n")
+            f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
+            f.write(str(best_confusion_matrix) + "\n")
+
+    if config.DDP:
+        dist.cleanup()
+
+
+if __name__ == "__main__":
+    if config.DDP:
+        dist.spawn(main)
+    else:
+        main()
