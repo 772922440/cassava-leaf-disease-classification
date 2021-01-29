@@ -10,3 +10,5 @@ data/*
 *.pth
 *.txt
 models/*
+./Ranger-Deep-Learning-Optimizer/*
+./PyTorch-Encoding/*
