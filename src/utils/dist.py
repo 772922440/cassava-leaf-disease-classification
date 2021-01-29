@@ -31,8 +31,17 @@ def spawn(demo_fn):
              join=True)
 
 
-def all_reduce_mean(value, world_size, device):
+def all_reduce_scalar(value, device, world_size=1, mean=False):
     value = torch.tensor([value]).to(device=device)
     dist.all_reduce(value, op=ReduceOp.SUM)
-    value = value.item() / world_size
-    return value
+    if mean:
+        value /= world_size
+    return value.item()
+
+
+def all_reduce_array(array, device, world_size=1, mean=False):
+    array = torch.from_numpy(array).to(device=device)
+    dist.all_reduce(array, op=ReduceOp.SUM)
+    if mean:
+        array /= world_size
+    return array.to('cpu').numpy()

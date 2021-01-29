@@ -20,3 +20,5 @@ scheduler: CosineAnnealingLR
 amp: False
 apex: False
 DDP: True
+norm_confusion_matrix: True
+num_workers: 4

@@ -232,13 +232,16 @@ def main(local_rank=0, world_size=1):
         # eval
         avg_val_loss, val_preds, val_labels = valid_fn(valid_loader, model, criterion, config.device)
         val_score = accuracy_score(val_labels, val_preds.argmax(dim=-1))
+        matrix = confusion_matrix(val_labels, val_preds.argmax(dim=-1))
 
         # sync scores
         if config.DDP:
-            avg_loss = dist.all_reduce_mean(avg_loss, world_size, config.device)
-            train_score = dist.all_reduce_mean(train_score, world_size, config.device)
-            val_score = dist.all_reduce_mean(val_score, world_size, config.device)
-            avg_val_loss = dist.all_reduce_mean(avg_val_loss, world_size, config.device)
+            avg_loss = dist.all_reduce_scalar(avg_loss, config.device, world_size, mean=True)
+            train_score = dist.all_reduce_scalar(train_score, config.device, world_size, mean=True)
+            val_score = dist.all_reduce_scalar(val_score, config.device, world_size, mean=True)
+            avg_val_loss = dist.all_reduce_scalar(avg_val_loss, config.device,  world_size, mean=True)
+            matrix = dist.all_reduce_array(matrix, config.device)
+
 
         # scheduler
         torch_utils.scheduler_step(scheduler, avg_val_loss)
@@ -258,7 +261,11 @@ def main(local_rank=0, world_size=1):
                 best_score = val_score
                 best_train_score = train_score
                 best_epoch = epoch+1
-                best_confusion_matrix = confusion_matrix(val_labels, val_preds.argmax(dim=-1))
+                best_confusion_matrix = matrix
+                
+                if config.norm_confusion_matrix:
+                    best_confusion_matrix = best_confusion_matrix.astype('float') \
+                                / np.sum(best_confusion_matrix, axis=1, keepdims=True).astype('float')
 
                 print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
                 torch.save(model.state_dict(), 
