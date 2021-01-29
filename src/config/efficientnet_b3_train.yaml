@@ -2,7 +2,7 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: AdamW
+optimizer: AdamP
 batch_size: 32
 epochs: 20
 min_lr: 1e-6
@@ -19,4 +19,4 @@ scheduler: CosineAnnealingLR
 
 amp: False
 apex: False
-data_parallel_gpus: 4,5,6,7
+DDP: False

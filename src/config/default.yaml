@@ -22,8 +22,7 @@ num_workers: 8
 k_folds: 5
 k_folds_csv: "5folds.csv"
 
-# set data parallel gpus
-data_parallel: False
-data_parallel_gpus: 4,5,6,7
+# set distri data parallel
+DDP: False
 amp: False
 apex: False

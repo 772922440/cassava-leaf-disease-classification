@@ -39,13 +39,13 @@ torch_utils.seed_torch(seed=config.seed)
 
 print(config)
 
-
 if config.DDP:
     # Init
     torch.distributed.init_process_group(backend="nccl")
     local_rank = torch.distributed.get_rank()
     torch.cuda.set_device(local_rank)
     config.device = torch.device( "cuda", local_rank)
+    
 
 def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device):
     batch_time = utils.AverageMeter()
@@ -180,15 +180,9 @@ def main():
     # init model
     model = get_backbone(config.backbone, config).to(device=config.device)
 
-    # data parallel
-    if config.data_parallel:
-        device_ids = list(map(int, config.data_parallel_gpus.split(',')))
-        model = nn.DataParallel(model, device_ids=device_ids)
-
     if config.DDP:
         print(f"Use DPP, You have {torch.cuda.device_count} GPUs")
         model = DDP(model, device_ids=[local_rank], output_device=local_rank)
-
 
     # optimizer
     optimizer = optim.get_optimizer(config.optimizer, config, model.parameters())
@@ -216,14 +210,13 @@ def main():
     train_dataset = ld.CLDDataset(train, 'train', transform=transform_train)
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
 
-
     if config.DDP:
         train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True, sampler=DistributedSampler(train_dataset))
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False, sampler=DistributedSampler(valid_dataset))
-
     else:
         train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True)
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False)
+    
     # train epochs
     best_score = 0.
     best_train_score = 0.
