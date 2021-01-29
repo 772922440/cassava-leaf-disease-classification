@@ -233,6 +233,7 @@ def main(local_rank=0, world_size=1):
 
         # sync scores
         if config.DDP:
+            avg_loss = dist.all_reduce_mean(avg_loss, world_size, config.device)
             train_score = dist.all_reduce_mean(train_score, world_size, config.device)
             val_score = dist.all_reduce_mean(val_score, world_size, config.device)
             avg_val_loss = dist.all_reduce_mean(avg_val_loss, world_size, config.device)
