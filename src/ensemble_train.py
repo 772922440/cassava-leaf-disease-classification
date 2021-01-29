@@ -213,7 +213,7 @@ def main(local_rank=0, world_size=1):
             sampler=DistributedSampler(train_dataset, shuffle=True, rank=local_rank))
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, 
             num_workers=config.num_workers, pin_memory=True, drop_last=False, 
-            sampler=DistributedSampler(valid_dataset, shuffle=True, rank=local_rank))
+            sampler=DistributedSampler(valid_dataset, shuffle=False, rank=local_rank))
     else:
         train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True)
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False)
