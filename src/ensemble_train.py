@@ -231,8 +231,7 @@ def main(local_rank=0, world_size=1):
 
         # eval
         avg_val_loss, val_preds, val_labels = valid_fn(valid_loader, model, criterion, config.device)
-        valid_labels = valid[config.target_col].values
-        val_score = accuracy_score(valid_labels, val_labels.argmax(dim=-1))
+        val_score = accuracy_score(val_labels, val_preds.argmax(dim=-1))
 
         # sync scores
         if config.DDP:
