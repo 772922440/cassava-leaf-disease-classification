@@ -23,6 +23,13 @@ try:
 except:
     apex_support = False 
 
+
+try:
+    from pytorch_toolbelt.inference import tta
+    tta_support = True
+except:
+    tta_support = False
+
 # our codes
 from utils import utils, torch_utils, cls_loss, optim, dist
 from dataset import leafdisease as ld
@@ -135,7 +142,10 @@ def valid_fn(valid_loader, model, criterion, device):
         batch_size = labels.size(0)
         # compute loss
         with torch.no_grad():
-            y_preds = model(images)
+            if config.TTA and tta_support:
+                y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=512)(images)
+            else:
+                y_preds = model(images)
         loss = criterion(y_preds, labels)
         losses.update(loss.item(), batch_size)
         # record accuracy
@@ -192,6 +202,9 @@ def main(local_rank=0, world_size=1):
         model, optimizer = amp.initialize(model, optimizer,
             opt_level='O1', keep_batchnorm_fp32=True, verbosity=0)
 
+    if config.TTA and tta_support:
+        print("Use TTA")
+
     config.T_max = config.epochs
     scheduler = torch_utils.get_scheduler(config.scheduler, config, optimizer)
     criterion = cls_loss.get_criterion(config.criterion, config)
@@ -225,6 +238,7 @@ def main(local_rank=0, world_size=1):
     best_train_score = 0.
     best_epoch = 0
     best_confusion_matrix = []
+    print('############### Begin Train ###################')
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
