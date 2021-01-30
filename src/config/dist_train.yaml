@@ -1,10 +1,10 @@
 # split train.csv
 k_folds: 5
 
-backbone: tf_efficientnet_b4
+backbone: tf_efficientnet_b3
 optimizer: AdamW
-batch_size: 16
-epochs: 40
+batch_size: 32
+epochs: 20
 min_lr: 1e-6
 lr: 1e-3
 weight_decay: 2e-4
@@ -14,7 +14,7 @@ print_freq: 50
 transform: "strong_fix"
 p: 0.9 # for transform
 criterion: LabelSmoothing
-smoothing: 0.1
+smoothing: 0.05
 scheduler: CosineAnnealingLR
 
 amp: False

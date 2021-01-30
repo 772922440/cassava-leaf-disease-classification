@@ -173,6 +173,7 @@ def main(local_rank=0, world_size=1):
     # init dist
     if config.DDP:
         dist.setup(local_rank, world_size)
+        config.batch_size //= world_size
 
     # init model
     model = get_backbone(config.backbone, config).to(device=config.device)
