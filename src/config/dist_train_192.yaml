@@ -17,7 +17,7 @@ transform: "strong_fix"
 p: 0.9 # for transform
 criterion: BiTemperedLoss
 t1: 0.2
-t2: 4.0
+t2: 1.0
 # criterion: LabelSmoothing
 # smoothing: 0.05
 
