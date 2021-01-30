@@ -1,0 +1,33 @@
+# split train.csv
+k_folds: 5
+
+backbone: efficientnet_b3
+optimizer: SGD
+momentum: 0.9
+batch_size: 128
+accumulated_gradient: 2
+epochs: 40
+lr: 1e-2
+weight_decay: 2e-4
+max_grad_norm: 10
+print_freq: 50
+model_suffix: '192'
+
+transform: "strong_fix"
+p: 0.9 # for transform
+criterion: BiTemperedLoss
+t1: 0.2
+t2: 4.0
+# criterion: LabelSmoothing
+# smoothing: 0.05
+
+scheduler: GradualWarmupScheduler
+total_epoch: 5
+after_scheduler: CosineAnnealingLR
+min_lr: 1e-5
+
+amp: False
+apex: False
+DDP: True
+norm_confusion_matrix: True
+num_workers: 4

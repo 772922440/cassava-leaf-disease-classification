@@ -55,7 +55,6 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     preds = []
     preds_labels = []
     start = end = time.time()
-    global_step = 0
 
     for step, (images, labels) in enumerate(train_loader):
         # measure data loading time
@@ -100,14 +99,13 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                 # scaled_loss.step(optimizer)
             optimizer.step()
         else:
-            if global_step % config.accumulated_gradient == 0:
+            if step % config.accumulated_gradient == 0:
                 optimizer.zero_grad()
             loss.backward()
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
-            if global_step % config.accumulated_gradient == config.accumulated_gradient - 1:
+            if step % config.accumulated_gradient == config.accumulated_gradient - 1:
                 optimizer.step()
 
-        global_step += 1
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -191,6 +189,9 @@ def main(local_rank=0, world_size=1):
     if config.DDP:
         dist.setup(local_rank, world_size)
         config.batch_size //= world_size
+
+    # enlarge batch size
+    config.batch_size //= config.accumulated_gradient
 
     # init model
     model = get_backbone(config.backbone, config).to(device=config.device)

@@ -4,9 +4,8 @@ k_folds: 5
 backbone: tf_efficientnet_b3
 optimizer: AdamW
 batch_size: 32
-epochs: 20
-min_lr: 1e-6
-lr: 1e-3
+epochs: 30
+lr: 1e-2
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 50
