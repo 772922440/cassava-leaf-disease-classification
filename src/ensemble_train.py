@@ -210,9 +210,9 @@ def main(local_rank=0, world_size=1):
     valid_dataset = ld.CLDDataset(valid, 'valid', transform=transform_valid)
 
     if config.DDP:
+        train_sampler = DistributedSampler(train_dataset, shuffle=True, rank=local_rank)
         train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=False, 
-            num_workers=config.num_workers, pin_memory=True, drop_last=True, 
-            sampler=DistributedSampler(train_dataset, shuffle=True, rank=local_rank))
+            num_workers=config.num_workers, pin_memory=True, drop_last=True, sampler=train_sampler)
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, 
             num_workers=config.num_workers, pin_memory=True, drop_last=False, 
             sampler=DistributedSampler(valid_dataset, shuffle=False, rank=local_rank))
@@ -243,6 +243,9 @@ def main(local_rank=0, world_size=1):
             val_score = dist.all_reduce_scalar(val_score, config.device, world_size, mean=True)
             avg_val_loss = dist.all_reduce_scalar(avg_val_loss, config.device,  world_size, mean=True)
             matrix = dist.all_reduce_array(matrix, config.device)
+
+            # for shuffle
+            train_sampler.set_epoch(epoch + 1)
 
 
         # scheduler
