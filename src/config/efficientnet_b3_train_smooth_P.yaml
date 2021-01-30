@@ -21,3 +21,5 @@ scheduler: CosineAnnealingLR
 amp: False
 apex: False
 DDP: False
+TTA: False
+
