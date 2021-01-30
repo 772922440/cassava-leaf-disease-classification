@@ -149,7 +149,7 @@ def valid_fn(valid_loader, model, criterion, device):
         # compute loss
         with torch.no_grad():
             if config.TTA and tta_support:
-                y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=512)(images)
+                y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=config.image_size)(images)
             else:
                 y_preds = model(images)
         loss = criterion(y_preds, labels)
