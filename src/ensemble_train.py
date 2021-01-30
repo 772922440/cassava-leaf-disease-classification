@@ -72,7 +72,11 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
         # record loss
         losses.update(loss.item(), batch_size)
 
+        # enlarge batch size
+        loss /= config.accumulated_gradient
+
         if config.amp:
+            assert config.accumulated_gradient == 1
             optimizer.zero_grad()
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
@@ -81,18 +85,20 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             scaler.update()
 
         elif apex_support and config.apex:
-            optimizer.zero_grad()    
+            assert config.accumulated_gradient == 1
+            optimizer.zero_grad()
             with amp.scale_loss(loss, optimizer) as scaled_loss:
                 scaled_loss.backward()
                 grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
                 # scaled_loss.step(optimizer)
             optimizer.step()
-
         else:
-            optimizer.zero_grad()
+            if global_step % config.accumulated_gradient == 0:
+                optimizer.zero_grad()
             loss.backward()
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
-            optimizer.step()
+            if global_step % config.accumulated_gradient == config.accumulated_gradient - 1:
+                optimizer.step()
 
         global_step += 1
         # measure elapsed time
