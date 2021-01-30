@@ -168,7 +168,8 @@ def main(local_rank=0, world_size=1):
         return 1
 
     # output dir
-    utils.mkdir(join(config.model_base_path, config.backbone))
+    model_save_path = join(config.model_base_path, config.backbone + config.model_name_suffix)
+    utils.mkdir(model_save_path)
 
     # init dist
     if config.DDP:
@@ -269,8 +270,8 @@ def main(local_rank=0, world_size=1):
                                 / np.sum(best_confusion_matrix, axis=1, keepdims=True).astype('float')
 
                 print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
-                torch.save(model.state_dict(), 
-                    join(config.model_base_path, config.backbone, f'fold{config.k}_best.pth'))
+                print(best_confusion_matrix)
+                torch.save(model.state_dict(), join(model_save_path, f'fold{config.k}_best.pth'))
 
 
     if local_rank == 0:
@@ -280,7 +281,7 @@ def main(local_rank=0, world_size=1):
         print(best_confusion_matrix)
 
         # write final log
-        with open(join(config.model_base_path, config.backbone, f'fold{config.k}_log.txt'), 'w') as f:
+        with open(join(model_save_path, f'fold{config.k}_log.txt'), 'w') as f:
             f.write(str(config) + "\n")
             f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
             f.write(str(best_confusion_matrix) + "\n")
