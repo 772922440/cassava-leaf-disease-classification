@@ -112,9 +112,9 @@ def get_albu_transform(transform, config):
                 A.RandomBrightnessContrast(p=0.5),
                 A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
                 
-                # 空间扭曲/局部屏蔽
+                # 扭曲/Mask
                 A.OpticalDistortion(p=0.5),
-                A.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, always_apply=False, p=0.5),
+                A.Cutout(num_holes=8, max_h_size=60, max_w_size=60, fill_value=0, always_apply=False, p=0.5),
 
                 # 归一化
                 A.Resize(config.image_size,config.image_size),
