@@ -94,8 +94,8 @@ def get_albu_transform(transform, config):
         train_trans = tta.Compose([
                         
                         tta.HorizontalFlip(),
-                        tta.HorizontalFlip(),
-                        tta.Rotate90(angles=[0, 90, 180, 270]),
+                        tta.VerticalFlip(),
+                        # tta.Rotate90(angles=[0, 90, 180, 270]),
                     
                     ]
 )
