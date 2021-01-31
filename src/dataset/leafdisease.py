@@ -101,9 +101,6 @@ def get_albu_transform(transform, config):
                 ])
     elif transform == "strong_fix2":
         train_trans =  A.Compose([
-                # 随机裁剪
-                A.RandomCrop(width=400, height=300, p=0.3),
-
                 # 旋转平移
                 A.RandomRotate90(p=0.5),
                 A.Flip(p=0.5),
@@ -117,7 +114,7 @@ def get_albu_transform(transform, config):
                 # Noise/扭曲/Mask
                 A.ISONoise(p=0.2),
                 A.OpticalDistortion(p=0.2),
-                A.Cutout(num_holes=4, max_h_size=60, max_w_size=60, fill_value=0, always_apply=False, p=0.3),
+                A.Cutout(num_holes=4, max_h_size=90, max_w_size=120, fill_value=0, always_apply=False, p=0.3),
 
                 # 归一化
                 A.Resize(config.image_size,config.image_size),
