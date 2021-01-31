@@ -6,7 +6,7 @@ optimizer: SGD
 momentum: 0.9
 batch_size: 128
 accumulated_gradient: 2
-epochs: 30
+epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 50
