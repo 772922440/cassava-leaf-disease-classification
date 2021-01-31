@@ -2,22 +2,32 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: AdamW
-batch_size: 32
+optimizer: SGD
+momentum: 0.9
+batch_size: 16
+accumulated_gradient: 1
 epochs: 30
-lr: 1e-2
+lr: 3e-3
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 50
+model_suffix: ''
 
 transform: "strong_fix"
 p: 0.9 # for transform
-criterion: LabelSmoothing
+# criterion: BiTemperedLoss
+# t1: 0.6
+# t2: 1.2
+criterion: TaylorCrossEntropyLoss
 smoothing: 0.05
-scheduler: CosineAnnealingLR
+
+scheduler: GradualWarmupScheduler
+total_epoch: 5
+after_scheduler: CosineAnnealingLR
+min_lr: 1e-5
 
 amp: False
 apex: False
-DDP: True
+DDP: False
 norm_confusion_matrix: True
 num_workers: 4
