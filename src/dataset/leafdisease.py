@@ -68,9 +68,8 @@ def get_albu_transform(transform, config):
                 A.Compose([
                     A.RandomRotate90(),
                     A.Flip(),
-                    A.RandomCrop(width=image_size//2, height=image_size//2),
-                    A.HorizontalFlip(),
-                    A.VerticalFlip()
+                    A.RandomCrop(width=config.image_size, height=config.image_size),
+                    A.HorizontalFlip(p=0.5),
                     A.RandomBrightnessContrast(p=0.2),
                     A.OneOf([
                         A.IAAAdditiveGaussianNoise(),
@@ -89,18 +88,13 @@ def get_albu_transform(transform, config):
                 ),
                 ToTensorV2(),
                 ])
-
-
     elif transform == "valid_tta" and tta_support:
         train_trans = tta.Compose([
-                        
                         tta.HorizontalFlip(),
                         tta.VerticalFlip(),
                         tta.FiveCrops(crop_height=config.image_size//2, crop_height=config.image_size//2 )
                         # tta.Rotate90(angles=[0, 90, 180, 270]),
-                    
-                    ]
-)
+                    ])
     else:
         raise "transform error"
 

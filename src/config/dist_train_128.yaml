@@ -6,23 +6,23 @@ optimizer: SGD
 momentum: 0.9
 batch_size: 128
 accumulated_gradient: 2
-epochs: 35
+epochs: 40
 lr: 1e-2
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 50
-model_suffix: '192'
+model_suffix: '_128'
 
 transform: "strong_fix"
 p: 0.9 # for transform
-# criterion: BiTemperedLoss
-# t1: 0.9
+criterion: BiTemperedLoss
+# t1: 0.7
 # t2: 2.0
 criterion: TaylorCrossEntropyLoss
 smoothing: 0.05
 
 scheduler: GradualWarmupScheduler
-total_epoch: 5
+total_epoch: 10
 after_scheduler: CosineAnnealingLR
 min_lr: 1e-5
 
