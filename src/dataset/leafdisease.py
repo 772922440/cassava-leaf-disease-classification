@@ -19,7 +19,7 @@ except:
 
 
 def get_albu_transform(transform, config):
-
+    # test
     if transform == 'valid_tta':
         test_trans = A.Compose([
             A.RandomCrop(config.image_size,config.image_size),
@@ -38,7 +38,8 @@ def get_albu_transform(transform, config):
             ),
             ToTensorV2(),
         ]),
-
+    
+    # train
     if transform == "torchvision":
         train_trans, test_trans = get_torch_transform(config.image_size)
     elif transform == "strong":
@@ -125,17 +126,7 @@ def get_albu_transform(transform, config):
                 ),
                 ToTensorV2(),
                 ])
-
-        test_trans = A.Compose([
-            # 归一化
-            A.Resize(config.image_size,config.image_size),
-            A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-            ToTensorV2(),
-            ])    
-    elif transform == "valid_tta" and tta_support:
+    elif transform == "valid_tta":
         train_trans = tta.Compose([
                         tta.HorizontalFlip(),
                         tta.VerticalFlip(),
