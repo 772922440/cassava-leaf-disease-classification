@@ -129,6 +129,8 @@ def get_albu_transform(transform, config):
         test_trans = A.Compose([
             # 直方图均衡化
             A.CLAHE(p=1), 
+
+            # 归一化
             A.Resize(config.image_size,config.image_size),
             A.Normalize(
                 mean=[0.485, 0.456, 0.406],
