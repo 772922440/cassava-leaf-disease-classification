@@ -18,30 +18,18 @@ except:
 
 
 def get_albu_transform(transform, config):
-    # test
-    if transform == 'valid_tta':
-        test_trans = A.Compose([
-            A.RandomCrop(config.image_size,config.image_size),
-            A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-            ToTensorV2(),
-        ])
-    else:
-        test_trans = A.Compose([
-            A.Resize(config.image_size,config.image_size),
-            A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-            ToTensorV2(),
-        ]),
+    # default test_trans
+    test_trans = A.Compose([
+        A.Resize(config.image_size,config.image_size),
+        A.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225],
+        ),
+        ToTensorV2(),
+    ])
     
     # train
-    if transform == "torchvision":
-        train_trans, test_trans = get_torch_transform(config.image_size)
-    elif transform == "strong":
+    if transform == "strong":
         train_trans = A.Compose([
                 A.Compose([
                     A.RandomRotate90(),
@@ -129,9 +117,15 @@ def get_albu_transform(transform, config):
         train_trans = tta.Compose([
                         tta.HorizontalFlip(),
                         tta.VerticalFlip(),
-                        #tta.FiveCrops(crop_height=config.image_size, crop_width=config.image_size),
-                        # tta.Rotate90(angles=[0, 90, 180, 270]),
                     ])
+
+        test_trans = A.Compose([
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+            ToTensorV2(),
+        ])
     else:
         raise "transform error"
 
@@ -160,6 +154,7 @@ def get_torch_transform(image_size):
                 std=[0.229, 0.224, 0.225], )
             ])
     return train_trans, test_trans
+
 
 class CLDDataset(Dataset):
     def __init__(self, df, mode, transform=None):
