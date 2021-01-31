@@ -25,7 +25,8 @@ except:
 
 
 try:
-    from pytorch_toolbelt.inference import tta
+    # from pytorch_toolbelt.inference import tta
+    import ttach as tta
     tta_support = True
 except:
     tta_support = False
@@ -33,6 +34,7 @@ except:
 # our codes
 from utils import utils, torch_utils, cls_loss, optim, dist
 from dataset import leafdisease as ld
+
 from model import get_backbone
 
 # read config
@@ -147,7 +149,10 @@ def valid_fn(valid_loader, model, criterion, device):
         # compute loss
         with torch.no_grad():
             if config.TTA and tta_support:
-                y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=config.image_size)(images)
+                # y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=config.image_size)(images)
+                tta_trans, _ =  ld.get_albu_transform('valid_tta', config)
+                tta_model = tta.ClassificationTTAWrapper(model, tta_trans)
+                y_preds = tta_model(images)
             else:
                 y_preds = model(images)
         loss = criterion(y_preds, labels)
@@ -253,6 +258,7 @@ def main(local_rank=0, world_size=1):
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
 
         # eval
+
         avg_val_loss, val_preds, val_labels = valid_fn(valid_loader, model, criterion, config.device)
         val_score = accuracy_score(val_labels, val_preds.argmax(dim=-1))
         matrix = confusion_matrix(val_labels, val_preds.argmax(dim=-1))

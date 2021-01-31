@@ -9,6 +9,14 @@ from albumentations.pytorch import ToTensorV2
 import torchvision
 import PIL
 
+try:
+    # from pytorch_toolbelt.inference import tta
+    import ttach as tta
+    tta_support = True
+except:
+    tta_support = False
+
+
 
 def get_albu_transform(transform, config):
     test_trans = A.Compose([
@@ -80,6 +88,17 @@ def get_albu_transform(transform, config):
                 ),
                 ToTensorV2(),
                 ])
+
+
+    elif transform == "valid_tta" and tta_support:
+        test_trans = tta.Compose([
+                        
+                        tta.HorizontalFlip(),
+                        tta.HorizontalFlip(),
+                        tta.Rotate90(angles=[0, 90, 180, 270]),
+                    
+                    ]
+)
     else:
         raise "transform error"
 
