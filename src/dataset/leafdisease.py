@@ -19,14 +19,26 @@ except:
 
 
 def get_albu_transform(transform, config):
-    test_trans = A.Compose([
-        A.Resize(config.image_size,config.image_size),
-        A.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-        ),
-        ToTensorV2(),
+
+    if transform == 'valid_tta':
+        test_trans = A.Compose([
+            A.RandomCrop(config.image_size,config.image_size),
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+            ToTensorV2(),
         ])
+    else:
+
+        test_trans = A.Compose([
+            A.Resize(config.image_size,config.image_size),
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+            ToTensorV2(),
+        ]),
 
     if transform == "torchvision":
         train_trans, test_trans = get_torch_transform(config.image_size)
@@ -128,7 +140,7 @@ def get_albu_transform(transform, config):
         train_trans = tta.Compose([
                         tta.HorizontalFlip(),
                         tta.VerticalFlip(),
-                        tta.FiveCrops(crop_height=config.image_size//2, crop_height=config.image_size//2 )
+                        #tta.FiveCrops(crop_height=config.image_size, crop_width=config.image_size),
                         # tta.Rotate90(angles=[0, 90, 180, 270]),
                     ])
     else:
