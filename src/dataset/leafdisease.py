@@ -106,16 +106,16 @@ def get_albu_transform(transform, config):
                 A.RandomRotate90(p=0.5),
                 A.Flip(p=0.5),
                 A.HorizontalFlip(p=0.5),
-                A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+                A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.5),
 
-                # 光照变化
-                A.RandomBrightnessContrast(p=0.2),
+                # 光照色彩/直方图均衡化
+                A.RandomBrightnessContrast(p=0.5),
                 A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
                 A.CLAHE(p=0.2),
                 
-                # 扭曲/屏蔽
+                # 空间扭曲/局部屏蔽
                 A.OpticalDistortion(p=0.2),
-                A.Cutout(num_holes=8, max_h_size=8, max_w_size=8, fill_value=0, always_apply=False, p=0.5),
+                A.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, always_apply=False, p=0.2),
 
                 # 归一化
                 A.Resize(config.image_size,config.image_size),
