@@ -1,7 +1,7 @@
 # split train.csv
 k_folds: 5
 
-backbone: tf_efficientnet_b4
+backbone: tf_efficientnet_b3
 optimizer: SGD
 momentum: 0.9
 batch_size: 128
