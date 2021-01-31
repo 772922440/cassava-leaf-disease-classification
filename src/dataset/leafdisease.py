@@ -91,7 +91,7 @@ def get_albu_transform(transform, config):
 
 
     elif transform == "valid_tta" and tta_support:
-        test_trans = tta.Compose([
+        train_trans = tta.Compose([
                         
                         tta.HorizontalFlip(),
                         tta.HorizontalFlip(),
