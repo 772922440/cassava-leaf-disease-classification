@@ -283,6 +283,7 @@ def main(local_rank=0, world_size=1):
             elapsed = time.time() - start_time
             print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
             print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
+            print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
 
             # TODO: maybe need to be deleted
             # we have saved last record to model file path
