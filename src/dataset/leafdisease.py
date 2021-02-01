@@ -100,14 +100,14 @@ def get_albu_transform(transform, config):
                 A.OneOf([
                     A.RandomBrightnessContrast(p=0.5),
                     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
-                ], p=0.8),
+                ], p=0.6),
                 
                 # 扭曲/Noise/Mask
                 A.OpticalDistortion(p=0.3),
                 A.OneOf([
                     A.ISONoise(p=0.5),
                     A.Cutout(num_holes=4, max_h_size=90, max_w_size=120, fill_value=0, p=0.5),
-                ], p=0.8),
+                ], p=0.6),
 
                 # 归一化
                 A.Resize(config.image_size,config.image_size),
