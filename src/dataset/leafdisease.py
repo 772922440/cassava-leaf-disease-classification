@@ -97,17 +97,13 @@ def get_albu_transform(transform, config):
 
                 # 光照色彩
                 A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=200, p=0.2),
-                A.OneOf([
-                    A.RandomBrightnessContrast(p=0.5),
-                    A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
-                ], p=0.7),
+                A.RandomBrightnessContrast(p=0.2),
+                A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
                 
                 # 扭曲/Noise/Mask
                 A.OpticalDistortion(p=0.2),
-                A.OneOf([
-                    A.ISONoise(p=0.5),
-                    A.Cutout(num_holes=4, max_h_size=90, max_w_size=120, fill_value=0, p=0.5),
-                ], p=0.7),
+                A.ISONoise(p=0.2),
+                A.Cutout(num_holes=4, max_h_size=90, max_w_size=120, fill_value=0, p=0.5),
 
                 # 归一化
                 A.Resize(config.image_size,config.image_size),
