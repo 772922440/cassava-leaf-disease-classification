@@ -1,0 +1,38 @@
+# split train.csv
+k_folds: 5
+
+backbone: tf_efficientnet_b3
+optimizer: SGD
+momentum: 0.9
+batch_size: 128
+accumulated_gradient: 5
+epochs: 30
+weight_decay: 2e-4
+max_grad_norm: 10
+print_freq: 200
+model_suffix: '_128'
+
+transform: "strong_fix2"
+p: 0.9 # for transform
+# criterion: BiTemperedLoss
+# t1: 0.8
+# t2: 1.5
+criterion: TaylorCrossEntropyLoss
+smoothing: 0.1
+
+# maxmize distance between 0 and 4
+forward_features: True
+cosine_loss: 0.1
+
+# scheduler: GradualWarmupScheduler
+# total_epoch: 10
+# after_scheduler: CosineAnnealingLR
+scheduler: CosineAnnealingLR
+lr: 0.01
+min_lr: 1e-4
+
+amp: False
+apex: False
+DDP: False
+norm_confusion_matrix: True
+num_workers: 6

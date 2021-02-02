@@ -20,6 +20,10 @@ seed: 2020
 num_workers: 8
 accumulated_gradient: 1
 
+# cosine_loss
+forward_features: False
+cosine_loss: False
+
 # k_folds
 k_folds: 5
 k_folds_csv: "5folds.csv"

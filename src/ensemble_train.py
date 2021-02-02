@@ -52,6 +52,10 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     if config.amp:
         scaler = GradScaler()
 
+    if config.cosine_loss:
+        cosine_loss = cls_loss.CosineDistanceLoss()
+        cosine_loss_avg =  utils.AverageMeter()
+
     # switch to train mode
     model.train()
     preds = []
@@ -67,12 +71,21 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
 
         # forward
         if config.amp:
+            assert not config.cosine_loss
             with autocast():
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
         else:
-            y_preds = model(images)
-            loss = criterion(y_preds, labels)
+            if config.cosine_loss:
+                y_preds, embedings = model(images)
+                loss = criterion(y_preds, labels)
+                cos_loss = cosine_loss(embedings, labels, 0, 4)
+                cosine_loss_avg.update(cos_loss.item(), batch_size)
+
+                loss = loss - config.cosine_loss * cos_loss
+            else:
+                y_preds = model(images)
+                loss = criterion(y_preds, labels)
 
         # record accuracy
         preds.append(y_preds.softmax(dim=-1).to('cpu'))
@@ -125,6 +138,10 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
                    ))
+            if config.cosine_loss:
+                print('Cosine Loss: {cosine_loss_avg.val:.4f}({cosine_loss_avg.avg:.4f})'
+                    .format(cosine_loss_avg=cosine_loss_avg))
+
     preds = torch.cat(preds, dim=0)
     preds_labels = torch.cat(preds_labels, dim=0)
     return losses.avg, preds, preds_labels

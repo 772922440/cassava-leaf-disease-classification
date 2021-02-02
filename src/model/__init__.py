@@ -5,5 +5,8 @@ from .resnet import *
 # resnext50_32x4d
 # tf_efficientnet_b3
 def get_backbone(backbone, config):
-    backbone = TimmBackbone(model_name=backbone, target_size=config.target_size)
+    if config.forward_features:
+        backbone = TimmBackboneFeature(model_name=backbone, target_size=config.target_size)
+    else:
+        backbone = TimmBackbone(model_name=backbone, target_size=config.target_size)
     return backbone

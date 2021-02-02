@@ -28,11 +28,23 @@ def get_criterion(criterion, config):
 class CosineDistanceLoss(nn.Module): 
     def __init__(self): 
         super(CosineDistanceLoss, self).__init__() 
-        self.cosine_similarity = nn.CosineSimilarity(dim=-1)
 
-    def forward(self, embedings, labels, class_a, class_b): 
-        n = embedings.size(0)
-        return self.cosine_similarity(class_a, class_b).mean()
+    def forward(self, embedings, labels, class_a, class_b):
+        a_index = (labels == class_a).nonzero().squeeze(1)
+        b_index = (labels == class_b).nonzero().squeeze(1)
+
+        if len(a_index) == 0 or len(b_index) == 0:
+            return torch.zeros(1).to(device=embedings.device)
+
+        a_embedings = embedings[a_index]
+        b_embedings = embedings[b_index]
+
+        a_sqrt = (torch.sum(torch.pow(a_embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
+        b_sqrt = (torch.sum(torch.pow(b_embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
+        ab_sqrt = torch.matmul(a_sqrt, b_sqrt.t())
+        ab_dot = torch.matmul(a_embedings, b_embedings.t())
+        mean_distance = torch.mean(ab_dot / ab_sqrt, dim=(0, 1))
+        return mean_distance
 
 class LabelSmoothingLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, dim=-1): 
