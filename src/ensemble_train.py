@@ -166,12 +166,16 @@ def valid_fn(valid_loader, model, criterion, device):
         # compute loss
         with torch.no_grad():
             if config.TTA and tta_support:
+                assert not config.cosine_loss
                 # y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=config.image_size)(images)
                 tta_trans, _ =  ld.get_albu_transform('valid_tta', config)
                 tta_model = tta.ClassificationTTAWrapper(model, tta_trans)
                 y_preds = tta_model(images)
             else:
-                y_preds = model(images)
+                if config.cosine_loss:
+                    y_preds, _ = model(images)
+                else:
+                    y_preds = model(images)
         loss = criterion(y_preds, labels)
         losses.update(loss.item(), batch_size)
         # record accuracy
