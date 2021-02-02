@@ -23,7 +23,17 @@ def get_criterion(criterion, config):
     else:
         raise "criterion error"
     return criterion
-    
+
+
+class CosineDistanceLoss(nn.Module): 
+    def __init__(self): 
+        super(CosineDistanceLoss, self).__init__() 
+        self.cosine_similarity = nn.CosineSimilarity(dim=-1)
+
+    def forward(self, embedings, labels, class_a, class_b): 
+        n = embedings.size(0)
+        return self.cosine_similarity(class_a, class_b).mean()
+
 class LabelSmoothingLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, dim=-1): 
         super(LabelSmoothingLoss, self).__init__() 
