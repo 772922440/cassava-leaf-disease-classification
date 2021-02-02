@@ -31,4 +31,4 @@ amp: False
 apex: False
 DDP: False
 norm_confusion_matrix: True
-num_workers: 4
+num_workers: 6
