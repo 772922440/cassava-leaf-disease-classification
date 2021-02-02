@@ -22,7 +22,7 @@ smoothing: 0.1
 
 # maxmize distance between 0 and 4
 forward_features: True
-cosine_loss: 0.3
+cosine_loss: 0.5
 
 # scheduler: GradualWarmupScheduler
 # total_epoch: 10
