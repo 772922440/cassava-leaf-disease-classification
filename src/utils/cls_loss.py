@@ -43,7 +43,7 @@ class CosineDistanceLoss(nn.Module):
         b_sqrt = (torch.sum(torch.pow(b_embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
         ab_sqrt = torch.matmul(a_sqrt, b_sqrt.t())
         ab_dot = torch.matmul(a_embedings, b_embedings.t())
-        margin_distance = torch.clamp_min(margin - ab_dot / ab_sqrt, 0)
+        margin_distance = torch.clamp_min(margin + ab_dot / ab_sqrt, 0)
         mean_distance = torch.mean(margin_distance, dim=(0, 1))
         return mean_distance
 
