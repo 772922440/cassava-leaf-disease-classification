@@ -56,7 +56,7 @@ class LabelSmoothingWeightedLoss(nn.Module):
         self.cls = classes 
         self.dim = dim 
         if weight is not None:
-            self.weight = (weight / weight.sum()).unsqueeze(0)
+            self.weight = (weight / weight.sum()).unsqueeze(0) * classes
         else:
             self.weight = 1
 
