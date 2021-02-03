@@ -46,7 +46,7 @@ class CosineDistanceLoss(nn.Module):
         negative = torch.logical_and(labels.unsqueeze(1).expand(n, n) == 0, \
                     labels.unsqueeze(0).expand(n, n) == 4)
         mean_loss = torch.where(negative, margin_distance, torch.zeros_like(margin_distance))
-        return mean_loss.sum() / (negative.sum() + 1e-8)
+        return mean_loss.sum() / (negative.sum() + 1e-8), negative.sum().item()
 
 class LabelSmoothingWeightedLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, weight=None, dim=-1): 
