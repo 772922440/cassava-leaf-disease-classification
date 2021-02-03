@@ -9,6 +9,7 @@ import os
 import math
 import time
 import csv
+import numpy as np
 
 # support 1e-4
 loader = yaml.SafeLoader
@@ -181,3 +182,39 @@ def save_results(epoch_num, train_loss, val_loss, train_acc , val_acc, file_dir,
         with open(path, 'a') as f:
             writer = csv.writer(f)
             writer.writerow(current_result)
+
+
+
+def rand_bbox(size, lam):
+    W = size[2]
+    H = size[3]
+    cut_rat = np.sqrt(1. - lam)
+    cut_w = np.int(W * cut_rat)
+    cut_h = np.int(H * cut_rat)
+
+    # uniform
+    cx = np.random.randint(W)
+    cy = np.random.randint(H)
+
+    bbx1 = np.clip(cx - cut_w // 2, 0, W)
+    bby1 = np.clip(cy - cut_h // 2, 0, H)
+    bbx2 = np.clip(cx + cut_w // 2, 0, W)
+    bby2 = np.clip(cy + cut_h // 2, 0, H)
+
+    return bbx1, bby1, bbx2, bby2
+
+
+def CutMix(images, labels, beta):
+
+    lam = np.random.beta(beta, beta)
+    rand_index = torch.randperm(images.size()[0]).to(config.device)
+
+
+    target_a = images
+    target_b = images[rand_index]
+    bbx1, bby1, bbx2, bby2 = rand_bbox(images.size(), lam)
+    images[:, :, bbx1:bbx2, bby1:bby2] = images[rand_index, :, bbx1:bbx2, bby1:bby2]
+    # adjust lambda to exactly match pixel ratio
+    lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (images.size()[-1] * images.size()[-2]))
+
+    return images, target_a, target_b ,lam

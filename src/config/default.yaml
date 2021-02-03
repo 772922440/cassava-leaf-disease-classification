@@ -27,9 +27,11 @@ distance_loss: False
 # k_folds
 k_folds: 5
 k_folds_csv: "5folds.csv"
+beta: 1.0
 
 # set distri data parallel
 DDP: False
 port: 12345
 amp: False
 apex: False
+cutmix: False
