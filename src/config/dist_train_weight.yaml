@@ -24,7 +24,7 @@ smoothing: 0.6
 # total_epoch: 10
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 2e-2
+lr: 3e-2
 min_lr: 1e-4
 
 amp: False
@@ -36,4 +36,4 @@ num_workers: 6
 # maxmize distance between 0 and 4
 # forward_features: True
 # cosine_loss: 0.1
-pos_weight: 2.9796, 2.2793, 2.1928, 0.4886, 2.1163
+pos_weight: 2, 2, 2, 1, 2
