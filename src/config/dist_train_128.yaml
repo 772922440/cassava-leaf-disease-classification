@@ -5,11 +5,11 @@ backbone: tf_efficientnet_b3
 optimizer: SGD
 momentum: 0.9
 batch_size: 128
-accumulated_gradient: 5
+accumulated_gradient: 6
 epochs: 30
 weight_decay: 2e-4
 max_grad_norm: 10
-print_freq: 200
+print_freq: 100
 model_suffix: '_128'
 
 transform: "strong_fix2"
@@ -31,4 +31,4 @@ amp: False
 apex: False
 DDP: False
 norm_confusion_matrix: True
-num_workers: 6
+num_workers: 4
