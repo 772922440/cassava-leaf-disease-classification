@@ -79,7 +79,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             if config.cosine_loss:
                 y_preds, embedings = model(images)
                 loss = criterion(y_preds, labels)
-                cos_loss = cosine_loss(embedings, labels, 0, 4)
+                cos_loss = cosine_loss(embedings, labels)
                 cosine_loss_avg.update(cos_loss.item(), batch_size)
 
                 loss = loss + config.cosine_loss * cos_loss
