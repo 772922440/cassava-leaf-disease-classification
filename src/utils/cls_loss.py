@@ -29,24 +29,29 @@ def get_criterion(criterion, config):
     return criterion
 
 
-class CosineDistanceLoss(nn.Module): 
+class  EuclieanDistanceLoss(nn.Module): 
     def __init__(self): 
-        super(CosineDistanceLoss, self).__init__() 
+        super(EuclieanDistanceLoss, self).__init__() 
 
-    def forward(self, embedings, labels, margin=0.5):
+    def forward(self, embedings, labels, margin=None):
         n = embedings.size(0)
 
-        # distance
-        e_sqrt = torch.sum(torch.pow(embedings, 2), dim=1, keepdim=True).sqrt()
-        ee_sqrt = torch.clamp_min(torch.matmul(e_sqrt, e_sqrt.t()), 1e-8)
-        ee_dot = torch.matmul(embedings, embedings.t())
-        margin_distance = torch.clamp_min(margin + ee_dot / ee_sqrt, 0)
+        # Compute pairwise distance, replace by the official when merged
+        dist = torch.pow(embedings, 2).sum(dim=1, keepdim=True).expand(n, n)
+        dist = dist + dist.t()
+        dist.addmm_(1, -2, embedings, embedings.t())
+        dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
+
+        if margin:
+            margin_dist = (margin - dist).clamp(min=0.)
+        else:
+            margin_dist = -dist
 
         # similar loss
         negative = torch.logical_and(labels.unsqueeze(1).expand(n, n) == 0, \
                     labels.unsqueeze(0).expand(n, n) == 4)
-        mean_loss = torch.where(negative, margin_distance, torch.zeros_like(margin_distance))
-        return mean_loss.sum() / (negative.sum() + 1e-8)
+        mean_loss = torch.where(negative, margin_dist, torch.zeros_like(margin_dist))
+        return mean_loss.sum() / (negative.sum() + 1e-8), int(negative.sum().item())
 
 class LabelSmoothingWeightedLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, weight=None, dim=-1): 

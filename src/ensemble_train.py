@@ -52,9 +52,9 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
     if config.amp:
         scaler = GradScaler()
 
-    if config.cosine_loss:
-        cosine_loss = cls_loss.CosineDistanceLoss()
-        cosine_loss_avg =  utils.AverageMeter()
+    if config.distance_loss:
+        distance_loss = cls_loss.EuclieanDistanceLoss()
+        distance_loss_avg =  utils.AverageMeter()
 
     # switch to train mode
     model.train()
@@ -71,18 +71,19 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
 
         # forward
         if config.amp:
-            assert not config.cosine_loss
+            assert not config.distance_loss
             with autocast():
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
         else:
-            if config.cosine_loss:
+            if config.distance_loss:
                 y_preds, embedings = model(images)
                 loss = criterion(y_preds, labels)
-                cos_loss = cosine_loss(embedings, labels)
-                cosine_loss_avg.update(cos_loss.item(), batch_size)
+                dis_loss, batch1 = distance_loss(embedings, labels)
+                if batch1:
+                    distance_loss_avg.update(dis_loss.item(), batch1)
 
-                loss = loss + config.cosine_loss * cos_loss
+                loss = loss + config.distance_loss * dis_loss
             else:
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
@@ -138,9 +139,9 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
                    ))
-            if config.cosine_loss:
-                print('Cosine Loss: {cosine_loss_avg.val:.4f}({cosine_loss_avg.avg:.4f})'
-                    .format(cosine_loss_avg=cosine_loss_avg))
+            if config.distance_loss:
+                print('Distance Loss: {distance_loss_avg.val:.4f}({distance_loss_avg.avg:.4f})'
+                    .format(distance_loss_avg=distance_loss_avg))
 
     preds = torch.cat(preds, dim=0)
     preds_labels = torch.cat(preds_labels, dim=0)
@@ -166,12 +167,19 @@ def valid_fn(valid_loader, model, criterion, device):
         # compute loss
         with torch.no_grad():
             if config.TTA and tta_support:
+<<<<<<< HEAD
                 assert not config.cosine_loss
                 tta_train_trans, tta_valid_trans =  ld.get_albu_transform('valid_tta', config)
                 tta_model = tta.ClassificationTTAWrapper(model, tta_valid_trans)
+=======
+                assert not config.distance_loss
+                # y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=config.image_size)(images)
+                tta_trans, _ =  ld.get_albu_transform('valid_tta', config)
+                tta_model = tta.ClassificationTTAWrapper(model, tta_trans)
+>>>>>>> a6e238400ec7126abc277c1ac4c06a2dd2af4915
                 y_preds = tta_model(images)
             else:
-                if config.cosine_loss:
+                if config.distance_loss:
                     y_preds, _ = model(images)
                 else:
                     y_preds = model(images)

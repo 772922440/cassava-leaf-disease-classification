@@ -20,9 +20,9 @@ seed: 2020
 num_workers: 8
 accumulated_gradient: 1
 
-# cosine_loss
+# distance_loss
 forward_features: False
-cosine_loss: False
+distance_loss: False
 
 # k_folds
 k_folds: 5
