@@ -33,7 +33,7 @@ class  EuclieanDistanceLoss(nn.Module):
     def __init__(self): 
         super(EuclieanDistanceLoss, self).__init__() 
 
-    def forward(self, embedings, labels, margin=None):
+    def forward(self, embedings, labels, margin=10.0):
         n = embedings.size(0)
 
         # Compute pairwise distance, replace by the official when merged
