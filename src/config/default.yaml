@@ -30,5 +30,6 @@ k_folds_csv: "5folds.csv"
 
 # set distri data parallel
 DDP: False
+port: 12345
 amp: False
 apex: False
