@@ -45,11 +45,10 @@ class  EuclieanDistanceLoss(nn.Module):
         if margin:
             margin_dist = (margin - dist).clamp(min=0.)
         else:
-            margin_dist = -dist
+            margin_dist = - dist
 
         # similar loss
-        negative = torch.logical_and(labels.unsqueeze(1).expand(n, n) == 0, \
-                    labels.unsqueeze(0).expand(n, n) == 4)
+        negative = labels.unsqueeze(1).expand(n, n) != labels.unsqueeze(0).expand(n, n)
         mean_loss = torch.where(negative, margin_dist, torch.zeros_like(margin_dist))
         return mean_loss.sum() / (negative.sum() + 1e-8), int(negative.sum().item())
 
