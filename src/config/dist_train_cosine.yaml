@@ -35,4 +35,4 @@ num_workers: 6
 
 # maxmize distance between 0 and 4
 forward_features: True
-cosine_loss: 0.5
+cosine_loss: 0.1
