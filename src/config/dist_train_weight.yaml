@@ -36,4 +36,4 @@ num_workers: 6
 # maxmize distance between 0 and 4
 # forward_features: True
 # cosine_loss: 0.1
-pos_weight: 19.68,9.77,8.96,1.63,8.30
+pos_weight: 2.9796, 2.2793, 2.1928, 0.4886, 2.1163
