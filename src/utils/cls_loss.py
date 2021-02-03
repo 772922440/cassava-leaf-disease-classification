@@ -29,28 +29,20 @@ class CosineDistanceLoss(nn.Module):
     def __init__(self): 
         super(CosineDistanceLoss, self).__init__() 
 
-    def forward(self, embedings, labels, class_a, class_b, margin=0.2):
-        a_index = (labels == class_a).nonzero().squeeze(1)
-        b_index = (labels == class_b).nonzero().squeeze(1)
+    def forward(self, embedings, labels, margin=0.5):
+        n = embedings.size(0)
 
-        if len(a_index) == 0 or len(b_index) == 0:
-            return torch.zeros(1).to(device=embedings.device)
+        # distance
+        e_sqrt = (torch.sum(torch.pow(embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
+        ee_sqrt = torch.matmul(e_sqrt, e_sqrt.t())
+        ee_dot = torch.matmul(embedings, embedings.t())
 
-        a_embedings = embedings[a_index]
-        b_embedings = embedings[b_index]
+        cosine_distance = ee_dot / ee_sqrt
+        margin_distance = torch.clamp_min(margin + cosine_distance, 0)
 
-        # 0 and 4
-        a_sqrt = (torch.sum(torch.pow(a_embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
-        b_sqrt = (torch.sum(torch.pow(b_embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
-        ab_sqrt = torch.matmul(a_sqrt, b_sqrt.t())
-        ab_dot = torch.matmul(a_embedings, b_embedings.t())
-        margin_distance = torch.clamp_min(margin + ab_dot / ab_sqrt, 0)
-
-        # 0 and 0
-        aa_dot = torch.matmul(a_embedings, a_embedings.t())
-        aa_sqrt = torch.matmul(a_sqrt, a_sqrt.t())
-        distance = aa_dot / aa_sqrt
-        mean_loss = margin_distance.mean() - distance.mean()
+        # similar loss
+        positive = labels.unsqueeze(1).expand(n, n) == labels.unsqueeze(0).expand(n, n)
+        mean_loss = torch.where(positive , -cosine_distance, margin_distance).mean()
         return mean_loss
 
 class LabelSmoothingLoss(nn.Module): 
