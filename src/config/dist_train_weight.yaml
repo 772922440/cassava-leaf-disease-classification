@@ -10,14 +10,14 @@ epochs: 30
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
-model_suffix: '_cosine'
+model_suffix: '_weight'
 
 transform: "strong_fix2"
 p: 0.9 # for transform
 # criterion: BiTemperedLoss
 # t1: 0.8
 # t2: 1.5
-criterion: LabelSmoothing
+criterion: LabelSmoothingWeightedLoss
 smoothing: 0.6
 
 # scheduler: GradualWarmupScheduler
@@ -34,5 +34,6 @@ norm_confusion_matrix: True
 num_workers: 6
 
 # maxmize distance between 0 and 4
-forward_features: True
-cosine_loss: 0.1
+# forward_features: True
+# cosine_loss: 0.1
+pos_weight: 19.68,9.77,8.96,1.63,8.30
