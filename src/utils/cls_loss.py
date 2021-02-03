@@ -29,7 +29,7 @@ class CosineDistanceLoss(nn.Module):
     def __init__(self): 
         super(CosineDistanceLoss, self).__init__() 
 
-    def forward(self, embedings, labels, margin=0.5):
+    def forward(self, embedings, labels, margin=0.2):
         n = embedings.size(0)
 
         # distance
