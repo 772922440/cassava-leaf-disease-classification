@@ -2,11 +2,11 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: SGD
+optimizer: AdamW
 momentum: 0.9
 batch_size: 128
-accumulated_gradient: 6
-epochs: 30
+accumulated_gradient: 2
+epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
@@ -17,18 +17,18 @@ p: 0.9 # for transform
 # criterion: BiTemperedLoss
 # t1: 0.8
 # t2: 1.5
-criterion: TaylorCrossEntropyLoss
-smoothing: 0.1
+criterion: LabelSmoothing
+smoothing: 0.6
 
 # scheduler: GradualWarmupScheduler
 # total_epoch: 10
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 0.01
-min_lr: 1e-4
+lr: 1e-3
+min_lr: 1e-5
 
 amp: False
 apex: False
-DDP: False
+DDP: True
 norm_confusion_matrix: True
-num_workers: 4
+num_workers: 6
