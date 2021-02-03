@@ -25,6 +25,7 @@ def get_albu_transform(transform, config):
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225],
         ),
+
         ToTensorV2(),
     ])
     
@@ -123,18 +124,49 @@ def get_albu_transform(transform, config):
                 ToTensorV2(),
                 ])
     elif transform == "valid_tta":
-        train_trans = tta.Compose([
+        train_trans =  A.Compose([
+                    A.Compose([
+                    # 旋转平移
+                        A.RandomRotate90(p=0.1),
+                        A.Flip(p=0.1),
+                        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.3),
+                        A.CenterCrop(height = config.image_size, width = config.image_size, p=0.5),
+
+                        # 光照
+                        A.OneOf([
+                            A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=200, p=0.2),
+                            A.RandomShadow(p=0.2),
+                        ], p=0.1),
+
+                        # 色彩
+                        A.OneOf([
+                            A.RandomBrightnessContrast(p=0.2),
+                            A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.2),
+                        ], p=0.1),
+                        
+                        # 扭曲/Mask
+                        A.OneOf([
+                            A.OpticalDistortion(p=0.2),
+                            A.Cutout(num_holes=3, max_h_size=200, max_w_size=200, fill_value=0, p=0.2)
+                        ], p=0.1),
+                    ], p=config.p),
+
+                # 归一化
+
+                A.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
+                A.Resize(config.image_size ,config.image_size),
+                ToTensorV2(),
+                ])
+
+        test_trans = tta.Compose([
                         tta.HorizontalFlip(),
                         tta.VerticalFlip(),
+                        tta.FiveCrops(crop_height = config.image_size * 3 //4, crop_width = config.image_size * 3 //4)
                     ])
 
-        test_trans = A.Compose([
-            A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-            ),
-            ToTensorV2(),
-        ])
     else:
         raise "transform error"
 

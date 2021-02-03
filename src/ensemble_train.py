@@ -167,9 +167,8 @@ def valid_fn(valid_loader, model, criterion, device):
         with torch.no_grad():
             if config.TTA and tta_support:
                 assert not config.cosine_loss
-                # y_preds = tta.TTAWrapper(model, tta.fivecrop_image2label, crop_size=config.image_size)(images)
-                tta_trans, _ =  ld.get_albu_transform('valid_tta', config)
-                tta_model = tta.ClassificationTTAWrapper(model, tta_trans)
+                tta_train_trans, tta_valid_trans =  ld.get_albu_transform('valid_tta', config)
+                tta_model = tta.ClassificationTTAWrapper(model, tta_valid_trans)
                 y_preds = tta_model(images)
             else:
                 if config.cosine_loss:
@@ -266,6 +265,7 @@ def main(local_rank=0, world_size=1):
         train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=config.num_workers, pin_memory=True, drop_last=True)
         valid_loader = DataLoader(valid_dataset, batch_size=config.batch_size, shuffle=False, num_workers=config.num_workers, pin_memory=True, drop_last=False)
     
+
     # train epochs
     best_score = 0.
     best_train_score = 0.
