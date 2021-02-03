@@ -33,8 +33,8 @@ class CosineDistanceLoss(nn.Module):
         n = embedings.size(0)
 
         # distance
-        e_sqrt = (torch.sum(torch.pow(embedings, 2), dim=1, keepdim=True) + 1e-10).sqrt()
-        ee_sqrt = torch.matmul(e_sqrt, e_sqrt.t())
+        e_sqrt = torch.sum(torch.pow(embedings, 2), dim=1, keepdim=True).sqrt()
+        ee_sqrt = torch.clamp_min(torch.matmul(e_sqrt, e_sqrt.t()), 1e-8)
         ee_dot = torch.matmul(embedings, embedings.t())
 
         cosine_distance = ee_dot / ee_sqrt
