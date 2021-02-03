@@ -80,7 +80,8 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                 y_preds, embedings = model(images)
                 loss = criterion(y_preds, labels)
                 cos_loss, batch1 = cosine_loss(embedings, labels)
-                cosine_loss_avg.update(cos_loss.item(), batch1)
+                if batch1:
+                    cosine_loss_avg.update(cos_loss.item(), batch1)
 
                 loss = loss + config.cosine_loss * cos_loss
             else:
