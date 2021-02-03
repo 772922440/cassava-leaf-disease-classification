@@ -29,21 +29,19 @@ class CosineDistanceLoss(nn.Module):
     def __init__(self): 
         super(CosineDistanceLoss, self).__init__() 
 
-    def forward(self, embedings, labels, margin=0.2):
+    def forward(self, embedings, labels, margin=0):
         n = embedings.size(0)
 
         # distance
         e_sqrt = torch.sum(torch.pow(embedings, 2), dim=1, keepdim=True).sqrt()
         ee_sqrt = torch.clamp_min(torch.matmul(e_sqrt, e_sqrt.t()), 1e-8)
         ee_dot = torch.matmul(embedings, embedings.t())
-
-        cosine_distance = ee_dot / ee_sqrt
-        margin_distance = torch.clamp_min(margin + cosine_distance, 0)
+        margin_distance = torch.clamp_min(margin + ee_dot / ee_sqrt, 0)
 
         # similar loss
-        positive = labels.unsqueeze(1).expand(n, n) == labels.unsqueeze(0).expand(n, n)
-        mean_loss = torch.where(positive, torch.zeros_like(margin_distance), margin_distance)
-        return mean_loss.sum() / positive.sum()
+        negative = labels.unsqueeze(1).expand(n, n) == 0 and labels.unsqueeze(0).expand(n, n) == 4
+        mean_loss = torch.where(negative, margin_distance, torch.zeros_like(margin_distance))
+        return mean_loss.sum() / negative.sum()
 
 class LabelSmoothingLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, dim=-1): 
