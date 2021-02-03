@@ -8,6 +8,10 @@ def get_criterion(criterion, config):
         criterion = nn.CrossEntropyLoss()
     elif criterion=='LabelSmoothing':
         criterion = LabelSmoothingLoss(classes=config.target_size, smoothing=config.smoothing)
+    elif criterion=='LabelSmoothingWeightedLoss':
+        pos_weight = list(map(float, config.pos_weight.split(',')))
+        pos_weight = torch.tensor(pos_weight).to(device=config.device)
+        criterion = LabelSmoothingWeightedLoss(classes=config.target_size, smoothing=config.smoothing, weight=pos_weight)
     elif criterion=='LabelSmoothSoftmaxCEV1':
         criterion = LabelSmoothSoftmaxCEV1(lb_smooth=config.smoothing)
     elif criterion=='FocalLoss':
@@ -43,6 +47,27 @@ class CosineDistanceLoss(nn.Module):
                     labels.unsqueeze(0).expand(n, n) == 4)
         mean_loss = torch.where(negative, margin_distance, torch.zeros_like(margin_distance))
         return mean_loss.sum() / (negative.sum() + 1e-8)
+
+class LabelSmoothingWeightedLoss(nn.Module): 
+    def __init__(self, classes=5, smoothing=0.0, weight=None, dim=-1): 
+        super(LabelSmoothingWeightedLoss, self).__init__() 
+        self.confidence = 1.0
+        self.smoothing = smoothing 
+        self.cls = classes 
+        self.dim = dim 
+        if weight:
+            self.weight = (weight / weight.sum()).unsqueeze(0)
+        else:
+            self.weight = 1
+
+    def forward(self, pred, target): 
+        pred = pred.log_softmax(dim=self.dim) 
+        with torch.no_grad():
+            true_dist = torch.zeros_like(pred) 
+            true_dist.fill_(self.smoothing / (self.cls - 1)) 
+            true_dist.scatter_(1, target.data.unsqueeze(1), self.confidence) 
+        return torch.mean(torch.sum(-true_dist * pred * self.weight, dim=self.dim))
+
 
 class LabelSmoothingLoss(nn.Module): 
     def __init__(self, classes=5, smoothing=0.0, dim=-1): 
