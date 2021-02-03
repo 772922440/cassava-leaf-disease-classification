@@ -35,6 +35,6 @@ num_workers: 6
 
 # maxmize distance between 0 and 4
 forward_features: True
-distance_loss: 0.001
+distance_loss: 0.01
 # pos_weight: 2, 2, 2, 1, 2
 port: 11111
