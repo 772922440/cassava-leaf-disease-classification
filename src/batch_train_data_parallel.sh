@@ -1,4 +1,14 @@
 #!/bin/bash
+trap 'onCtrlC' INT
+
+function onCtrlC () {
+  echo 'Ctrl+C is captured'
+  for pid in $(jobs -p); do
+    kill -9 $pid
+  done
+  exit 1
+}
+
 config=$1  # ensemble_train 配置文件
 args=$2 # 其它args，逗号分割
 gpus=$3    # 0,1
