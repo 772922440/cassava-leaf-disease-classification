@@ -20,11 +20,11 @@ p: 0.9 # for transform
 criterion: LabelSmoothing
 smoothing: 0.6
 
-scheduler: GradualWarmupScheduler
-total_epoch: 5
-after_scheduler: CosineAnnealingLR
-# scheduler: CosineAnnealingLR
-lr: 5e-2
+# scheduler: GradualWarmupScheduler
+# total_epoch: 5
+# after_scheduler: CosineAnnealingLR
+scheduler: CosineAnnealingLR
+lr: 1e-2
 min_lr: 1e-3
 
 amp: False
