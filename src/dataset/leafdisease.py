@@ -94,8 +94,6 @@ def get_albu_transform(transform, config):
                     # 旋转平移
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
-                    A.RandomResizedCrop(width=config.image_size, height=config.image_size,
-                        scale=(0.3, 1.0), ratio=(0.75, 1.33), p=0.2),
                     A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
 
                     # 光照
@@ -103,6 +101,10 @@ def get_albu_transform(transform, config):
                         A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=200, p=0.2),
                         A.RandomShadow(p=0.2),
                     ], p=0.3),
+
+                    # 裁剪
+                    A.RandomResizedCrop(width=config.image_size, height=config.image_size,
+                        scale=(0.3, 1.0), ratio=(0.75, 1.33), p=0.2),
 
                     # 色彩
                     A.OneOf([
