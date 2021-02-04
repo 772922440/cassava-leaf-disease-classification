@@ -91,20 +91,16 @@ def get_albu_transform(transform, config):
     elif transform == "strong_fix2":
         train_trans =  A.Compose([
                 A.Compose([
-                    # 旋转
+                    # 旋转平移
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
-
-                    # 缩放
-                    A.OneOf([
-                        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
-                        A.RandomResizedCrop(width=config.image_size, height=config.image_size,
-                            scale=(0.2, 1.0), ratio=(0.75, 1.33), p=0.2),
-                    ], p=0.3),
+                    A.RandomResizedCrop(width=config.image_size, height=config.image_size,
+                        scale=(0.3, 1.0), ratio=(0.75, 1.33), p=0.2),
+                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
 
                     # 光照
                     A.OneOf([
-                        A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=150, p=0.2),
+                        A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=200, p=0.2),
                         A.RandomShadow(p=0.2),
                     ], p=0.3),
 
@@ -114,7 +110,7 @@ def get_albu_transform(transform, config):
                         A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.2),
                     ], p=0.5),
                     
-                    # prevent overfit
+                    # 扭曲/Mask
                     A.OneOf([
                         A.OpticalDistortion(p=0.2),
                         A.Cutout(num_holes=3, max_h_size=200, max_w_size=200, fill_value=0, p=0.2)
