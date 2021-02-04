@@ -334,7 +334,7 @@ def main(local_rank=0, world_size=1):
             # TODO: maybe need to be deleted
             # we have saved last record to model file path
             if config.save_filename:
-                utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
+                utils.save_results(epoch+1, avg_loss, avg_val_loss, train_score , val_score, './results/', config.save_filename)
 
             if val_score > best_score:
                 best_score = val_score

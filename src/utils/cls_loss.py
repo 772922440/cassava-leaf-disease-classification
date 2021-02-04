@@ -22,6 +22,10 @@ def get_criterion(criterion, config):
         criterion = SymmetricCrossEntropy().to(config.device)
     elif criterion=='BiTemperedLoss': 
         criterion = BiTemperedLogisticLoss(t1=config.t1, t2=config.t2, smoothing=config.smoothing)
+    elif criterion=='BiTemperedWeightedLoss':
+        pos_weight = list(map(float, config.pos_weight.split(',')))
+        pos_weight = torch.tensor(pos_weight).to(device=config.device)
+        criterion = BiTemperedWeightedLoss(t1=config.t1, t2=config.t2, smoothing=config.smoothing, weight=pos_weight)
     elif criterion=='TaylorCrossEntropyLoss':
         criterion = TaylorCrossEntropyLoss(smoothing=config.smoothing, target_size=config.target_size)
     else:
@@ -379,6 +383,68 @@ def bi_tempered_logistic_loss(activations,
     if reduction == 'mean':
         return loss_values.mean()
 
+
+def bi_tempered_weighted_logistic_loss(activations,
+        labels,
+        t1,
+        t2,
+        weight,
+        label_smoothing=0.0,
+        num_iters=5,
+        reduction = 'mean'
+        ):
+
+    """Bi-Tempered Logistic Loss.
+    Args:
+      activations: A multi-dimensional tensor with last dimension `num_classes`.
+      labels: A tensor with shape and dtype as activations (onehot), 
+        or a long tensor of one dimension less than activations (pytorch standard)
+      t1: Temperature 1 (< 1.0 for boundedness).
+      t2: Temperature 2 (> 1.0 for tail heaviness, < 1.0 for finite support).
+      label_smoothing: Label smoothing parameter between [0, 1). Default 0.0.
+      num_iters: Number of iterations to run the method. Default 5.
+      reduction: ``'none'`` | ``'mean'`` | ``'sum'``. Default ``'mean'``.
+        ``'none'``: No reduction is applied, return shape is shape of
+        activations without the last dimension.
+        ``'mean'``: Loss is averaged over minibatch. Return shape (1,)
+        ``'sum'``: Loss is summed over minibatch. Return shape (1,)
+    Returns:
+      A loss tensor.
+    """
+
+    if len(labels.shape)<len(activations.shape): #not one-hot
+        labels_onehot = torch.zeros_like(activations)
+        labels_onehot.scatter_(1, labels[..., None], 1)
+    else:
+        labels_onehot = labels
+
+    if label_smoothing > 0:
+        num_classes = labels_onehot.shape[-1]
+        labels_onehot = ( 1 - label_smoothing * num_classes / (num_classes - 1) ) \
+                * labels_onehot + \
+                label_smoothing / (num_classes - 1)
+
+    num_classes = labels_onehot.shape[-1]
+    pos_weight = (weight / weight.sum()).unsqueeze(0) * num_classes
+
+    probabilities = tempered_softmax(activations, t2, num_iters)
+
+    loss_values = labels_onehot * log_t(labels_onehot + 1e-10, t1) \
+            - labels_onehot * log_t(probabilities, t1) \
+            - labels_onehot.pow(2.0 - t1) / (2.0 - t1) \
+            + probabilities.pow(2.0 - t1) / (2.0 - t1)
+
+    loss_values = loss_values * pos_weight # weighted loss
+
+    loss_values = loss_values.sum(dim = -1) #sum over classes
+
+    if reduction == 'none':
+        return loss_values
+    if reduction == 'sum':
+        return loss_values.sum()
+    if reduction == 'mean':
+        return loss_values.mean()
+
 class BiTemperedLogisticLoss(nn.Module): 
     def __init__(self, t1, t2, smoothing=0.0): 
         super(BiTemperedLogisticLoss, self).__init__() 
@@ -391,6 +457,25 @@ class BiTemperedLogisticLoss(nn.Module):
             t1=self.t1, t2=self.t2,
             label_smoothing=self.smoothing,
             reduction='none'
+        )
+        
+        loss_label = loss_label.mean()
+        return loss_label
+
+class BiTemperedWeightedLoss(nn.Module): 
+    def __init__(self, t1, t2, weight, smoothing=0.0): 
+        super(BiTemperedWeightedLoss, self).__init__() 
+        self.t1 = t1
+        self.t2 = t2
+        self.smoothing = smoothing
+        self.weight = weight
+    def forward(self, logit_label, truth_label):
+        loss_label = bi_tempered_weighted_logistic_loss(
+            logit_label, truth_label,
+            t1=self.t1, t2=self.t2,
+            label_smoothing=self.smoothing,
+            reduction='none',
+            weight=self.weight
         )
         
         loss_label = loss_label.mean()
