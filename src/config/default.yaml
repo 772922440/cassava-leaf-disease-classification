@@ -35,3 +35,4 @@ port: 12345
 amp: False
 apex: False
 cutmix: False
+cutmix_prob: 0.3

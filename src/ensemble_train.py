@@ -93,10 +93,14 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                 loss = criterion(y_preds, labels)
 
         elif config.cutmix:
-            images , target_a, target_b , lam = CutMix(images, labels, config.beta)
-            y_preds = model(images)
-            loss = criterion(y_preds, target_a) * lam + criterion(y_preds, target_b) * (1. - lam)
-
+            r = np.random.rand(1)
+            if r < config.cutmix_prob:
+                images , target_a, target_b , lam = CutMix(images, labels, config.beta)
+                y_preds = model(images)
+                loss = criterion(y_preds, target_a) * lam + criterion(y_preds, target_b) * (1. - lam)
+            else:
+                y_preds = model(images)
+                loss = criterion(y_preds, labels)
         else:
             if config.distance_loss:
                 y_preds, embedings = model(images)
@@ -104,7 +108,6 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                 dis_loss, batch1 = distance_loss(embedings, labels)
                 if batch1:
                     distance_loss_avg.update(dis_loss.item(), batch1)
-
                 loss = loss + config.distance_loss * dis_loss
             else:
                 y_preds = model(images)

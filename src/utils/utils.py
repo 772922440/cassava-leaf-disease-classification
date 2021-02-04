@@ -204,17 +204,3 @@ def rand_bbox(size, lam):
     return bbx1, bby1, bbx2, bby2
 
 
-def CutMix(images, labels, beta):
-
-    lam = np.random.beta(beta, beta)
-    rand_index = torch.randperm(images.size()[0]).to(config.device)
-
-
-    target_a = images
-    target_b = images[rand_index]
-    bbx1, bby1, bbx2, bby2 = rand_bbox(images.size(), lam)
-    images[:, :, bbx1:bbx2, bby1:bby2] = images[rand_index, :, bbx1:bbx2, bby1:bby2]
-    # adjust lambda to exactly match pixel ratio
-    lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (images.size()[-1] * images.size()[-2]))
-
-    return images, target_a, target_b ,lam
