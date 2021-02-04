@@ -30,7 +30,6 @@ min_lr: 1e-3
 amp: False
 apex: False
 DDP: True
-cutmix: True
 norm_confusion_matrix: True
 num_workers: 16
 
