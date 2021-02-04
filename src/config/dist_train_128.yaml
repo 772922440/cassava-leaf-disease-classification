@@ -2,10 +2,10 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: AdamW
+optimizer: SGD
 momentum: 0.9
 batch_size: 128
-accumulated_gradient: 2
+accumulated_gradient: 4
 epochs: 30
 weight_decay: 2e-4
 max_grad_norm: 10
@@ -24,11 +24,11 @@ smoothing: 0.6
 # total_epoch: 10
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 1e-3
-min_lr: 1e-5
+lr: 1e-2
+min_lr: 1e-3
 
 amp: False
 apex: False
 DDP: True
 norm_confusion_matrix: True
-num_workers: 6
+num_workers: 8
