@@ -68,7 +68,9 @@ def get_albu_transform(transform, config):
                 A.Compose([
                     A.RandomRotate90(),
                     A.Flip(),
-                    A.RandomCrop(width=config.image_size, height=config.image_size),
+                    A.RandomResizedCrop(width=config.image_size, height=config.image_size,
+                        scale=(0.08, 1.0), ratio=(0.75, 1.33    ), p=1.0),
+                    # A.RandomCrop(width=config.image_size, height=config.image_size),
                     A.HorizontalFlip(p=0.5),
                     A.RandomBrightnessContrast(p=0.2),
                     A.OneOf([

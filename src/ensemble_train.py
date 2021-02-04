@@ -15,6 +15,7 @@ from torch.utils.data.distributed import DistributedSampler
 import torch.multiprocessing as mp
 
 import warnings
+
 warnings.filterwarnings('ignore')
 
 try:
@@ -41,6 +42,21 @@ from model import get_backbone
 config = utils.read_all_config()
 utils.mkdir(config.model_base_path)
 torch_utils.seed_torch(seed=config.seed)
+
+def CutMix(images, labels, beta):
+
+    lam = np.random.beta(beta, beta)
+    rand_index = torch.randperm(images.size()[0]).to(config.device)
+
+
+    target_a = labels
+    target_b = labels[rand_index]
+    bbx1, bby1, bbx2, bby2 = utils.rand_bbox(images.size(), lam)
+    images[:, :, bbx1:bbx2, bby1:bby2] = images[rand_index, :, bbx1:bbx2, bby1:bby2]
+    # adjust lambda to exactly match pixel ratio
+    lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (images.size()[-1] * images.size()[-2]))
+
+    return images, target_a, target_b ,lam
 
 
 def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device):
@@ -75,6 +91,12 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
             with autocast():
                 y_preds = model(images)
                 loss = criterion(y_preds, labels)
+
+        elif config.cutmix:
+            images , target_a, target_b , lam = CutMix(images, labels, config.beta)
+            y_preds = model(images)
+            loss = criterion(y_preds, target_a) * lam + criterion(y_preds, target_b) * (1. - lam)
+
         else:
             if config.distance_loss:
                 y_preds, embedings = model(images)
