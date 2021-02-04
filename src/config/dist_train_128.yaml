@@ -5,7 +5,7 @@ backbone: tf_efficientnet_b3
 optimizer: AdamW
 momentum: 0.9
 batch_size: 128
-accumulated_gradient: 4
+accumulated_gradient: 2
 epochs: 30
 weight_decay: 2e-4
 max_grad_norm: 10
@@ -31,4 +31,4 @@ amp: False
 apex: False
 DDP: True
 norm_confusion_matrix: True
-num_workers: 8
+num_workers: 6
