@@ -94,7 +94,6 @@ def get_albu_transform(transform, config):
                     # 旋转平移
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
-                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
 
                     # 光照
                     A.OneOf([
@@ -102,21 +101,24 @@ def get_albu_transform(transform, config):
                         A.RandomShadow(p=0.2),
                     ], p=0.3),
 
-                    # 裁剪
-                    A.RandomResizedCrop(width=config.image_size, height=config.image_size,
-                        scale=(0.3, 1.0), ratio=(0.75, 1.33), p=0.2),
-
                     # 色彩
                     A.OneOf([
                         A.RandomBrightnessContrast(p=0.2),
                         A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.2),
                     ], p=0.5),
                     
-                    # 扭曲/Mask
+                    # Dropout
                     A.OneOf([
                         A.OpticalDistortion(p=0.2),
                         A.Cutout(num_holes=3, max_h_size=200, max_w_size=200, fill_value=0, p=0.2)
                     ], p=0.5),
+
+                    # 缩放
+                    A.OneOf([
+                        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+                        A.RandomResizedCrop(width=config.image_size, height=config.image_size,
+                            scale=(0.2, 1.0), ratio=(0.75, 1.33), p=0.2),
+                    ], p=0.3)
                 ], p=config.p),
 
                 # 归一化
