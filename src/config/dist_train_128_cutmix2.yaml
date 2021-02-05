@@ -24,7 +24,7 @@ smoothing: 0.1
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 5e-4
+lr: 1e-3
 min_lr: 1e-5
 
 amp: False
@@ -34,4 +34,4 @@ norm_confusion_matrix: True
 num_workers: 8
 
 cutmix: True
-cutmix_prob: 0.3
+cutmix_prob: 0.2
