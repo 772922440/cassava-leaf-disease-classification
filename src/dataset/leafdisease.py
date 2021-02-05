@@ -106,7 +106,7 @@ def get_albu_transform(transform, config):
                     
                     # 扭曲/Mask
                     A.OpticalDistortion(p=0.2),
-                    A.Cutout(num_holes=3, max_h_size=200, max_w_size=200, fill_value=0, p=0.2)
+                    # A.Cutout(num_holes=3, max_h_size=200, max_w_size=200, fill_value=0, p=0.2)
                 ], p=config.p),
 
                 # 归一化
