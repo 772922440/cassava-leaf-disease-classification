@@ -102,6 +102,7 @@ def get_albu_transform(transform, config):
 
                     # 裁剪
                     A.RandomCrop(width=config.image_size, height=config.image_size, p=0.2),
+                    A.OpticalDistortion(p=0.2),
 
                     # 反转
                     A.RandomRotate90(p=0.5),
