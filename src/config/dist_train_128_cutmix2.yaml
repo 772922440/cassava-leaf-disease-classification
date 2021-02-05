@@ -6,7 +6,7 @@ optimizer: SGD
 momentum: 0.9
 batch_size: 32
 accumulated_gradient: 1
-epochs: 30
+epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
@@ -25,7 +25,7 @@ smoothing: 0.6
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
 lr: 1e-2
-min_lr: 1e-4
+min_lr: 1e-3
 
 amp: False
 apex: False
@@ -34,4 +34,4 @@ norm_confusion_matrix: True
 num_workers: 8
 
 cutmix: True
-cutmix_prob: 0.2
+cutmix_prob: 0.3
