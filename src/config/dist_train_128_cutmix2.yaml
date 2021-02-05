@@ -34,4 +34,4 @@ norm_confusion_matrix: True
 num_workers: 8
 
 cutmix: True
-cutmix_prob: 0.5
+cutmix_prob: 0.3

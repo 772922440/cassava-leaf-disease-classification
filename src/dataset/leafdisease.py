@@ -97,7 +97,7 @@ def get_albu_transform(transform, config):
                     A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
 
                     # 光照
-                    A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=200, p=0.2),
+                    A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=100, p=0.2),
                     A.RandomShadow(p=0.2),
 
                     # 色彩
