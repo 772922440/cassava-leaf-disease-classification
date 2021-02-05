@@ -253,7 +253,7 @@ def main(local_rank=0, world_size=1):
     model = get_backbone(config.backbone, config).to(device=config.device)
 
     if config.DDP:
-        print(f"Use DPP, You have {torch.cuda.device_count} GPUs")
+        print(f"Use DPP, GPU {torch.cuda.current_device()} Starts...")
         model = DDP(model, device_ids=[local_rank], output_device=local_rank)
 
     # optimizer

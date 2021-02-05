@@ -98,7 +98,7 @@ def get_albu_transform(transform, config):
                     # 翻转
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
-                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.3),
+                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.3, rotate_limit=45, p=0.3),
 
                     # 扭曲
                     A.OpticalDistortion(p=0.3),
