@@ -2,10 +2,10 @@
 k_folds: 5
 
 backbone: tf_efficientnet_b3
-optimizer: Ranger
+optimizer: AdamW
 momentum: 0.9
-batch_size: 128
-accumulated_gradient: 4
+batch_size: 256
+accumulated_gradient: 8
 epochs: 30
 weight_decay: 2e-4
 max_grad_norm: 10
