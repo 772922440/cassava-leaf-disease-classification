@@ -1,3 +1,4 @@
+from albumentations.augmentations.transforms import RandomCrop
 import torch
 import torchvision.transforms as transforms 
 from torch.utils.data import Dataset
@@ -91,11 +92,6 @@ def get_albu_transform(transform, config):
     elif transform == "strong_fix2":
         train_trans =  A.Compose([
                 A.Compose([
-                    # 旋转平移
-                    A.RandomRotate90(p=0.5),
-                    A.Flip(p=0.5),
-                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
-
                     # 光照
                     A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=100, p=0.2),
                     A.RandomShadow(p=0.2),
@@ -103,10 +99,13 @@ def get_albu_transform(transform, config):
                     # 色彩
                     A.RandomBrightnessContrast(p=0.2),
                     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
-                    
-                    # 扭曲/Mask
-                    A.OpticalDistortion(p=0.2),
-                    # A.Cutout(num_holes=3, max_h_size=200, max_w_size=200, fill_value=0, p=0.2)
+
+                    # 裁剪
+                    A.RandomCrop(width=config.image_size, height=config.image_size, p=0.2),
+
+                    # 反转
+                    A.RandomRotate90(p=0.5),
+                    A.Flip(p=0.5),
                 ], p=config.p),
 
                 # 归一化
