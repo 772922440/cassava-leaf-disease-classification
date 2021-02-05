@@ -93,7 +93,6 @@ def get_albu_transform(transform, config):
         train_trans =  A.Compose([
                 A.Compose([
                     # 亮度
-                    A.RandomSunFlare(num_flare_circles_lower=1, num_flare_circles_upper=2, src_radius=200, p=0.3),
                     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
 
                     # 翻转
