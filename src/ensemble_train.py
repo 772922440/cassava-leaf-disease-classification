@@ -228,6 +228,9 @@ def valid_fn(valid_loader, model, criterion, device):
 def main(local_rank=0, world_size=1):
     if local_rank == 0:
         print(config)
+    
+    # for different process
+    torch_utils.seed_torch(seed=config.seed + local_rank)
 
     # train k fold
     if 'k' not in config or config.k < 0 or config.k >= config.k_folds:
