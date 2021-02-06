@@ -1,16 +1,19 @@
 # split train.csv
 k_folds: 5
+data_base_path: "../data2"
+k_folds_csv: "5folds2.csv"
+seed: 2021
 
-backbone: tf_efficientnet_b3
+backbone: resnext50_32x4d
 optimizer: SGD
 momentum: 0.9
-batch_size: 128
-accumulated_gradient: 4
-epochs: 30
+batch_size: 32
+accumulated_gradient: 1
+epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
-model_suffix: '_128'
+model_suffix: '_res50d'
 
 transform: "strong_fix2"
 p: 0.9 # for transform
@@ -32,3 +35,7 @@ apex: False
 DDP: True
 norm_confusion_matrix: True
 num_workers: 8
+
+cutmix: True
+cutmix_prob: 0.3
+port: 15555

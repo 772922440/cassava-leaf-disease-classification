@@ -229,6 +229,9 @@ def valid_fn(valid_loader, model, criterion, device):
 def main(local_rank=0, world_size=1):
     if local_rank == 0:
         print(config)
+    
+    # for different process
+    torch_utils.seed_torch(seed=config.seed + local_rank)
 
     # train k fold
     if 'k' not in config or config.k < 0 or config.k >= config.k_folds:
@@ -251,7 +254,7 @@ def main(local_rank=0, world_size=1):
     model = get_backbone(config.backbone, config).to(device=config.device)
 
     if config.DDP:
-        print(f"Use DPP, You have {torch.cuda.device_count} GPUs")
+        print(f"Use DPP, GPU {torch.cuda.current_device()} Starts...")
         model = DDP(model, device_ids=[local_rank], output_device=local_rank)
 
     # optimizer
@@ -347,7 +350,7 @@ def main(local_rank=0, world_size=1):
             # TODO: maybe need to be deleted
             # we have saved last record to model file path
             if config.save_filename:
-                utils.save_results(epoch+1, avg_loss.item(), avg_val_loss.item(), train_score , val_score, './results/', config.save_filename)
+                utils.save_results(epoch+1, avg_loss, avg_val_loss, train_score , val_score, './results/', config.save_filename)
 
 
             if (config.f1_score and val_f1_score > best_f1_score) or (not config.f1_score and val_score > best_score):
