@@ -37,5 +37,5 @@ norm_confusion_matrix: True
 num_workers: 16
 
 cutmix: True
-cutmix_prob: 0.3
+cutmix_prob: 0.2
 port: 15555
