@@ -9,7 +9,7 @@ optimizer: AdamW
 momentum: 0.9
 batch_size: 32
 accumulated_gradient: 1
-epochs: 15
+epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
@@ -18,8 +18,8 @@ model_suffix: '_res50d'
 transform: "strong_fix2"
 p: 0.9 # for transform
 criterion: BiTemperedLoss
-t1: 0.7
-t2: 2.0
+t1: 0.8
+t2: 1.2
 # criterion: LabelSmoothing
 smoothing: 0.6
 
