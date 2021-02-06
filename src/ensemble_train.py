@@ -368,7 +368,8 @@ def main(local_rank=0, world_size=1):
                     best_confusion_matrix = best_confusion_matrix.astype('float') \
                                 / np.sum(best_confusion_matrix, axis=1, keepdims=True).astype('float')
 
-                print(f'Epoch {epoch+1} - Train F1 Score {best_train_f1_score:.4f}:, Save Best F1 Score: {best_f1_score:.4f}')
+                print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
+                print(f'Best Epoch {epoch+1} - Train F1 Score {best_train_f1_score:.4f}:, Save Best F1 Score: {best_f1_score:.4f}')
                 print(best_confusion_matrix)
                 torch.save(model.state_dict(), join(model_save_path, f'fold{config.k}_best.pth'))
 
@@ -376,15 +377,15 @@ def main(local_rank=0, world_size=1):
     if local_rank == 0:
         # print final log
         print(config)
-        print(f'Best Epoch: {best_epoch}, Train F1 Score {best_train_f1_score:.4f}:, Best F1 Score: {best_f1_score:.4f}')
         print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
+        print(f'Best Epoch: {best_epoch}, Train F1 Score {best_train_f1_score:.4f}:, Best F1 Score: {best_f1_score:.4f}')
         print(best_confusion_matrix)
 
         # write final log
         with open(join(model_save_path, f'fold{config.k}_log.txt'), 'w') as f:
             f.write(str(config) + "\n")
             f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
-            f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_f1_score:.4f}:, Best Score: {best_f1_score:.4f}' + "\n")            
+            f.write(f'Best Epoch: {best_epoch}, Train F1 Score {best_train_f1_score:.4f}:, Best F1 Score: {best_f1_score:.4f}' + "\n")            
             f.write(str(best_confusion_matrix) + "\n")
 
     if config.DDP:
