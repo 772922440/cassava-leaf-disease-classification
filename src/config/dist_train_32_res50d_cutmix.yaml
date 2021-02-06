@@ -5,10 +5,10 @@ k_folds_csv: "5folds2.csv"
 seed: 2021
 
 backbone: resnext50_32x4d
-optimizer: SGD
+optimizer: AdamW
 momentum: 0.9
 batch_size: 32
-accumulated_gradient: 1
+accumulated_gradient: 2
 epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
@@ -18,8 +18,8 @@ model_suffix: '_res50d'
 transform: "strong_fix2"
 p: 0.9 # for transform
 criterion: BiTemperedLoss
-t1: 0.8
-t2: 1.2
+t1: 0.5
+t2: 2.0
 # criterion: LabelSmoothing
 smoothing: 0.6
 
@@ -27,8 +27,8 @@ smoothing: 0.6
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 2e-2
-min_lr: 1e-3
+lr: 1e-3
+min_lr: 1e-5
 
 amp: False
 apex: False
