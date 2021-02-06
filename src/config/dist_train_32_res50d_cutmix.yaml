@@ -27,7 +27,7 @@ smoothing: 0.6
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 1e-2
+lr: 2e-2
 min_lr: 1e-3
 
 amp: False
