@@ -1,5 +1,5 @@
 # data
-data_base_path: "../data"
+data_base_path: "../data2"
 train_csv: "train.csv"
 train_images: "train_images"
 
