@@ -34,5 +34,7 @@ DDP: False
 port: 12345
 amp: False
 apex: False
+f1_score: False
 cutmix: False
 cutmix_prob: 0.3
+
