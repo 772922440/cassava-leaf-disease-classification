@@ -1,4 +1,4 @@
-from albumentations.augmentations.transforms import RandomCrop
+from albumentations.augmentations.transforms import RandomCrop, RandomResizedCrop
 import torch
 import torchvision.transforms as transforms 
 from torch.utils.data import Dataset
@@ -94,11 +94,13 @@ def get_albu_transform(transform, config):
                 A.Compose([
                     # 亮度
                     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
+
+                    # 裁剪
+                    A.RandomResizedCrop(scale=(0.3, 1.0), ratio=(0.75, 1.3333333333333333), p=0.2),
                     
                     # 翻转
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
-                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.3, rotate_limit=45, p=0.2),
 
                     # 扭曲
                     A.OpticalDistortion(p=0.2),
