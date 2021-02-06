@@ -7,7 +7,7 @@ optimizer: AdamW
 momentum: 0.9
 batch_size: 32
 accumulated_gradient: 1
-epochs: 20
+epochs: 15
 weight_decay: 2e-4
 max_grad_norm: 10
 print_freq: 100
