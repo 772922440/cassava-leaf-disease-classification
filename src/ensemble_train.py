@@ -164,7 +164,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                    remain=utils.timeSince(start, float(step+1)/len(train_loader)),
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
-                   ), end = '\r', flush = True)
+                   ))
             if config.distance_loss:
                 print('Distance Loss: {distance_loss_avg.val:.4f}({distance_loss_avg.avg:.4f})'
                     .format(distance_loss_avg=distance_loss_avg))
