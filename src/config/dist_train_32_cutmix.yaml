@@ -3,7 +3,7 @@ k_folds: 5
 data_base_path: "../data2"
 
 backbone: tf_efficientnet_b4
-optimizer: SGD
+optimizer: AdamW
 momentum: 0.9
 batch_size: 32
 accumulated_gradient: 1
@@ -25,8 +25,8 @@ smoothing: 0.6
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 1e-2
-min_lr: 1e-3
+lr: 1e-3
+min_lr: 1e-5
 
 amp: False
 apex: False

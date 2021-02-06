@@ -5,7 +5,7 @@ k_folds_csv: "5folds2.csv"
 seed: 2021
 
 backbone: resnext50_32x4d
-optimizer: SGD
+optimizer: AdamW
 momentum: 0.9
 batch_size: 32
 accumulated_gradient: 1
@@ -27,8 +27,8 @@ smoothing: 0.6
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 1e-2
-min_lr: 1e-3
+lr: 1e-3
+min_lr: 1e-5
 
 amp: False
 apex: False
