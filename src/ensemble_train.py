@@ -3,7 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
 import torch
 import torch.nn as nn
@@ -15,6 +15,7 @@ from torch.utils.data.distributed import DistributedSampler
 import torch.multiprocessing as mp
 
 import warnings
+import sys
 
 warnings.filterwarnings('ignore')
 
@@ -163,7 +164,7 @@ def train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, device
                    remain=utils.timeSince(start, float(step+1)/len(train_loader)),
                    grad_norm=grad_norm,
                    #lr=scheduler.get_lr()[0],
-                   ))
+                   ), end = '\r', flush = True)
             if config.distance_loss:
                 print('Distance Loss: {distance_loss_avg.val:.4f}({distance_loss_avg.avg:.4f})'
                     .format(distance_loss_avg=distance_loss_avg))
@@ -300,19 +301,27 @@ def main(local_rank=0, world_size=1):
     # train epochs
     best_score = 0.
     best_train_score = 0.
+    
     best_epoch = 0
     best_confusion_matrix = []
+
+    best_train_f1_score = 0
+    best_f1_score = 0
+    
     print('############### Begin Train ###################')
     for epoch in range(config.epochs):
         start_time = time.time()
         # train
         avg_loss, train_preds, train_labels = train_fn(train_loader, model, criterion, optimizer, epoch, scheduler, config.device)
         train_score = accuracy_score(train_labels, train_preds.argmax(dim=-1))
-
+        train_f1_score = f1_score(train_labels, train_preds.argmax(dim=-1),  average='weighted')
+        
         # eval
 
         avg_val_loss, val_preds, val_labels = valid_fn(valid_loader, model, criterion, config.device)
         val_score = accuracy_score(val_labels, val_preds.argmax(dim=-1))
+        val_f1_score = f1_score(val_labels, val_preds.argmax(dim=-1),  average='weighted')
+        
         matrix = confusion_matrix(val_labels, val_preds.argmax(dim=-1))
 
         # sync scores
@@ -335,24 +344,31 @@ def main(local_rank=0, world_size=1):
             elapsed = time.time() - start_time
             print(f'Epoch {epoch+1} - avg_train_loss: {avg_loss:.4f}  avg_val_loss: {avg_val_loss:.4f}  time: {elapsed:.0f}s')
             print(f'Epoch {epoch+1} - train accuracy: {train_score} eval accuracy: {val_score}')
-            print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
-
+            print(f'Epoch {epoch+1} - train F1 score: {train_f1_score} eval F1 score: {val_f1_score}')
+            print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
+            print(f'Best Epoch: {best_epoch}, Train F1 Score {best_train_f1_score:.4f}:, Best F1 Score: {best_f1_score:.4f}' + "\n")
             # TODO: maybe need to be deleted
             # we have saved last record to model file path
             if config.save_filename:
                 utils.save_results(epoch+1, avg_loss, avg_val_loss, train_score , val_score, './results/', config.save_filename)
 
-            if val_score > best_score:
+
+            if (config.f1_score and val_f1_score > best_f1_score) or (not config.f1_score and val_score > best_score):
+
+                best_f1_score = val_f1_score
+                best_train_f1_score = train_f1_score
+
                 best_score = val_score
                 best_train_score = train_score
+
                 best_epoch = epoch+1
                 best_confusion_matrix = matrix
-                
+
                 if config.norm_confusion_matrix:
                     best_confusion_matrix = best_confusion_matrix.astype('float') \
                                 / np.sum(best_confusion_matrix, axis=1, keepdims=True).astype('float')
 
-                print(f'Epoch {epoch+1} - Train Score {best_train_score:.4f}:, Save Best Score: {best_score:.4f}')
+                print(f'Epoch {epoch+1} - Train F1 Score {best_train_f1_score:.4f}:, Save Best F1 Score: {best_f1_score:.4f}')
                 print(best_confusion_matrix)
                 torch.save(model.state_dict(), join(model_save_path, f'fold{config.k}_best.pth'))
 
@@ -360,6 +376,7 @@ def main(local_rank=0, world_size=1):
     if local_rank == 0:
         # print final log
         print(config)
+        print(f'Best Epoch: {best_epoch}, Train F1 Score {best_train_f1_score:.4f}:, Best F1 Score: {best_f1_score:.4f}')
         print(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}')
         print(best_confusion_matrix)
 
@@ -367,6 +384,7 @@ def main(local_rank=0, world_size=1):
         with open(join(model_save_path, f'fold{config.k}_log.txt'), 'w') as f:
             f.write(str(config) + "\n")
             f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_score:.4f}:, Best Score: {best_score:.4f}' + "\n")
+            f.write(f'Best Epoch: {best_epoch}, Train Score {best_train_f1_score:.4f}:, Best Score: {best_f1_score:.4f}' + "\n")            
             f.write(str(best_confusion_matrix) + "\n")
 
     if config.DDP:
