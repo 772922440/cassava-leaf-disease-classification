@@ -17,10 +17,10 @@ model_suffix: '_res50d'
 
 transform: "strong_fix2"
 p: 0.9 # for transform
-# criterion: BiTemperedLoss
-# t1: 0.8
-# t2: 1.5
-criterion: LabelSmoothing
+criterion: BiTemperedLoss
+t1: 0.7
+t2: 1.5
+# criterion: LabelSmoothing
 smoothing: 0.6
 
 # scheduler: GradualWarmupScheduler
