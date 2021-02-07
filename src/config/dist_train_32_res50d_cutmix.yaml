@@ -8,7 +8,7 @@ backbone: resnext50_32x4d
 optimizer: AdamW
 momentum: 0.9
 batch_size: 32
-accumulated_gradient: 2
+accumulated_gradient: 1
 epochs: 20
 weight_decay: 2e-4
 max_grad_norm: 10
