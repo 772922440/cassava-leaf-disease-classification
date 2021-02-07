@@ -373,6 +373,9 @@ def main(local_rank=0, world_size=1):
                 print(best_confusion_matrix)
                 torch.save(model.state_dict(), join(model_save_path, f'fold{config.k}_best.pth'))
 
+            if config.always_save:
+                torch.save(model.state_dict(), join(model_save_path, f'epoch{epoch+1}.pth'))
+
 
     if local_rank == 0:
         # print final log

@@ -1,18 +1,18 @@
 # split train.csv
 k_folds: 5
 
-backbone: 'resnext50_32x4d'
+backbone: 'tf_efficientnet_b3'
 optimizer: AdamW
 lr: 1e-3
 min_lr: 1e-4
 weight_decay: 1e-4
 batch_size: 32
-epochs: 50
+epochs: 20
 max_grad_norm: 10
 print_freq: 100
 
-criterion: CrossEntropyLoss
-scheduler: CosineAnnealingLR
+criterion: 'BiTemperedLoss'
+scheduler: 'CosineAnnealingLR'
 amp: False
 
 transform: "strong"
@@ -21,8 +21,10 @@ p: 0.9 # for tansform
 save_filename: 'res_crossentropy'
 data_parallel: False
 
-smoothing: 0.0
-t1: 0.7
-t2: 1.3
+smoothing: 0.2
+t1: 0.6
+t2: 1.6
 
-pos_weight: 19.68, 9.77, 8.96, 1.63 , 8.30
+always_save: 1
+
+#pos_weight: 19.68, 9.77, 8.96, 1.63 , 8.30

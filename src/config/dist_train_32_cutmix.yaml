@@ -34,5 +34,7 @@ DDP: True
 norm_confusion_matrix: True
 num_workers: 8
 
-cutmix: False
+cutmix: True
 cutmix_prob: 0.2
+
+always_save: False
