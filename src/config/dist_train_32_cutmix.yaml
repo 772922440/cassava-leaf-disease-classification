@@ -13,7 +13,7 @@ max_grad_norm: 10
 print_freq: 100
 model_suffix: '_cutmix'
 
-transform: "strong_fix2"
+transform: "strong_fix"
 p: 0.9 # for transform
 criterion: BiTemperedLoss
 t1: 0.6
@@ -34,7 +34,7 @@ DDP: True
 norm_confusion_matrix: True
 num_workers: 8
 
-cutmix: False
+cutmix: True
 cutmix_prob: 0.1
 
 always_save: False
