@@ -14,7 +14,7 @@ print_freq: 100
 model_suffix: '_cutmix'
 
 transform: "strong_fix2"
-p: 0.8 # for transform
+p: 0.6 # for transform
 criterion: BiTemperedLoss
 t1: 0.6
 t2: 1.8
@@ -34,7 +34,7 @@ DDP: True
 norm_confusion_matrix: True
 num_workers: 8
 
-cutmix: False
-cutmix_prob: 0.1
+cutmix: True
+cutmix_prob: 0.2
 
 always_save: False
