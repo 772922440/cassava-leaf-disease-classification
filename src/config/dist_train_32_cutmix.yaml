@@ -13,7 +13,7 @@ max_grad_norm: 10
 print_freq: 100
 model_suffix: '_cutmix'
 
-transform: "strong_fix"
+transform: "strong_fix2"
 p: 0.9 # for transform
 criterion: BiTemperedLoss
 t1: 0.6

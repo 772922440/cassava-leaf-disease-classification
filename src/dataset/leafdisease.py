@@ -76,7 +76,7 @@ def get_albu_transform(transform, config):
                         A.CLAHE(clip_limit=2),
                         A.IAASharpen(),
                         A.RandomBrightnessContrast(),            
-                        ], p=0.4),
+                        ], p=0.3),
                     ], p=config.p),
                 A.Resize(config.image_size,config.image_size),
                 A.Normalize(
@@ -91,9 +91,7 @@ def get_albu_transform(transform, config):
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
                     A.RandomResizedCrop(width=config.image_size, height=config.image_size, scale=(0.5, 1.0), p=0.5),
-                    
-                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.5, rotate_limit=45, p=0.2),
-                    A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1, p=0.2),
+                    A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1, p=0.5),
                 ], p=config.p),
 
                 # 归一化
