@@ -36,3 +36,5 @@ num_workers: 8
 
 cutmix: True
 cutmix_prob: 0.2
+
+always_save: 1
