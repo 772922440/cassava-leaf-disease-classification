@@ -14,7 +14,7 @@ print_freq: 100
 model_suffix: '_cutmix'
 
 transform: "strong_fix2"
-p: 0.9 # for transform
+p: 0.8 # for transform
 criterion: BiTemperedLoss
 t1: 0.6
 t2: 1.8
