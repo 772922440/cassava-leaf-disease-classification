@@ -13,13 +13,13 @@ max_grad_norm: 10
 print_freq: 100
 model_suffix: '_cutmix'
 
-transform: "strong_fix2"
+transform: "strong_fix"
 p: 0.9 # for transform
 criterion: BiTemperedLoss
 t1: 0.6
 t2: 1.8
 # criterion: LabelSmoothing
-smoothing: 0.6
+smoothing: 0.2
 
 # scheduler: GradualWarmupScheduler
 # total_epoch: 5
@@ -34,5 +34,5 @@ DDP: True
 norm_confusion_matrix: True
 num_workers: 8
 
-cutmix: True
+cutmix: False
 cutmix_prob: 0.2
