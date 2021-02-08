@@ -102,6 +102,31 @@ def get_albu_transform(transform, config):
                 ),
                 ToTensorV2(),
                 ])
+    elif transform == "strong_fix3":
+        train_trans =  A.Compose([
+                A.RandomRotate90(p=0.5),
+                A.Flip(p=0.5),
+                A.CLAHE(clip_limit=2),
+                A.RandomResizedCrop(width=config.image_size, height=config.image_size, scale=(0.5, 1.0), p=0.2),
+                A.Resize(config.image_size,config.image_size),
+                A.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
+                ToTensorV2(),
+                ])
+
+        test_trans = A.Compose([
+            A.CLAHE(clip_limit=2),
+            A.Resize(config.image_size,config.image_size),
+            A.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+            ),
+
+            ToTensorV2(),
+        ])       
+        # 外加 cutmix
     elif transform == "valid_tta":
         train_trans =  A.Compose([
                     A.Compose([
