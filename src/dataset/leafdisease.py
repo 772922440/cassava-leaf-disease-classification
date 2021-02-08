@@ -117,7 +117,7 @@ def get_albu_transform(transform, config):
                 ])
 
         test_trans = A.Compose([
-            A.CLAHE(clip_limit=2),
+            A.CLAHE(clip_limit=2, p=1),
             A.Resize(config.image_size,config.image_size),
             A.Normalize(
                 mean=[0.485, 0.456, 0.406],
