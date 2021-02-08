@@ -106,7 +106,7 @@ def get_albu_transform(transform, config):
         train_trans =  A.Compose([
                 A.RandomRotate90(p=0.5),
                 A.Flip(p=0.5),
-                A.CLAHE(clip_limit=2),
+                A.CLAHE(clip_limit=2, p=0.5),
                 A.RandomResizedCrop(width=config.image_size, height=config.image_size, scale=(0.5, 1.0), p=0.2),
                 A.Resize(config.image_size,config.image_size),
                 A.Normalize(
