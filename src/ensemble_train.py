@@ -252,7 +252,7 @@ def main(local_rank=0, world_size=1):
 
     # init model
     if config.deit:
-        model = torch.hub.load('facebookresearch/deit:main', 'deit_base_patch16_224', pretrained=True).to(device=config.device)
+        model = torch.hub.load('facebookresearch/deit:main', 'deit_base_patch16_384', pretrained=True).to(device=config.device)
     else:
         model = get_backbone(config.backbone, config).to(device=config.device)
 
