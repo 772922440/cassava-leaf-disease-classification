@@ -104,6 +104,7 @@ def get_albu_transform(transform, config):
                 ])
     elif transform == "strong_fix3": 
         train_trans =  A.Compose([
+                A.Resize(800, 600),
                 A.Transpose(p=0.5),
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.5),
