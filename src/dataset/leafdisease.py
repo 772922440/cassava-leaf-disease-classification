@@ -111,7 +111,7 @@ def get_albu_transform(transform, config):
                     A.CLAHE(clip_limit=2),
                     A.IAASharpen(),
                     A.RandomBrightnessContrast(),            
-                    ], p=0.2),
+                    ], p=0.3),
                 A.RandomResizedCrop(width=config.image_size, height=config.image_size, scale=(0.5, 1.0), p=0.2),
                 A.Resize(config.image_size,config.image_size),
                 A.Normalize(
