@@ -378,7 +378,8 @@ def main(local_rank=0, world_size=1):
 
             if config.always_save:
                 torch.save(model.state_dict(), join(model_save_path, f'epoch{epoch+1}.pth'))
-
+            if config.always_save and config.save_filename:
+                torch.save(model.state_dict(), join(model_save_path, f'{config.save_filename}_epoch{epoch+1}.pth'))    
 
     if local_rank == 0:
         # print final log
