@@ -18,7 +18,7 @@ criterion: TaylorCrossEntropyLoss
 # t1: 0.6
 # t2: 1.8
 # criterion: LabelSmoothing
-smoothing: 0.2
+smoothing: 0.1
 
 # scheduler: GradualWarmupScheduler
 # total_epoch: 5
