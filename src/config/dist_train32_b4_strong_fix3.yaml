@@ -1,14 +1,16 @@
 # split train.csv
 k_folds: 5
 data_base_path: "../data2"
+k_folds_csv: "5folds2.csv"
+seed: 42
 
 backbone: tf_efficientnet_b4
 optimizer: AdamW
 momentum: 0.9
-batch_size: 128
-accumulated_gradient: 4
+batch_size: 32
+accumulated_gradient: 2
 epochs: 20
-weight_decay: 2e-4
+weight_decay: 1e-4
 max_grad_norm: 10
 print_freq: 100
 model_suffix: '_cutmix'
@@ -24,8 +26,8 @@ smoothing: 0.2
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 1e-3
-min_lr: 1e-4
+lr: 5e-4
+min_lr: 5e-6
 
 amp: False
 apex: False
@@ -34,6 +36,6 @@ norm_confusion_matrix: True
 num_workers: 8
 
 cutmix: True
-cutmix_prob: 0.2
+cutmix_prob: 0.5
 
 always_save: False

@@ -1,4 +1,4 @@
-from albumentations.augmentations.transforms import RandomCrop, RandomResizedCrop
+from albumentations.augmentations.transforms import RandomCrop, RandomResizedCrop, Resize
 import torch
 import torchvision.transforms as transforms 
 from torch.utils.data import Dataset
@@ -102,17 +102,25 @@ def get_albu_transform(transform, config):
                 ),
                 ToTensorV2(),
                 ])
-    elif transform == "strong_fix3":
+    elif transform == "strong_fix3": 
         train_trans =  A.Compose([
-                A.RandomRotate90(p=0.5),
-                A.Flip(p=0.5),
-                A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.5, rotate_limit=45, p=0.2),
-                A.OneOf([
-                    A.CLAHE(clip_limit=2),
-                    A.IAASharpen(),
-                    A.RandomBrightnessContrast(),            
-                    ], p=0.3),
-                A.Resize(config.image_size,config.image_size),
+                A.Resize(800, 600),
+                A.Transpose(p=0.5),
+                A.HorizontalFlip(p=0.5),
+                A.VerticalFlip(p=0.5),
+                A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.5),
+                A.HueSaturationValue(
+                    hue_shift_limit=0.2, 
+                    sat_shift_limit=0.2, 
+                    val_shift_limit=0.2, 
+                    p=0.5
+                ),
+                A.RandomBrightnessContrast(
+                    brightness_limit=(-0.1,0.1), 
+                    contrast_limit=(-0.1, 0.1), 
+                    p=0.5
+                ),
+                A.RandomResizedCrop(config.image_size, config.image_size, p=1.0),
                 A.Normalize(
                     mean=[0.485, 0.456, 0.406],
                     std=[0.229, 0.224, 0.225],
@@ -121,12 +129,12 @@ def get_albu_transform(transform, config):
                 ])
 
         test_trans = A.Compose([
-            A.Resize(config.image_size,config.image_size),
+            A.Resize(800, 600),
+            A.CenterCrop(config.image_size, config.image_size),
             A.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225],
             ),
-
             ToTensorV2(),
         ])       
         # 外加 cutmix
