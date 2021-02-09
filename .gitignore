@@ -1,3 +1,4 @@
+./deit/*
 Data/*
 sy/checkpoints/*
 Data.zip
