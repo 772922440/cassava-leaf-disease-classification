@@ -25,7 +25,7 @@ smoothing: 0.2
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
 lr: 1e-3
-min_lr: 1e-4
+min_lr: 1e-5
 
 amp: False
 apex: False
