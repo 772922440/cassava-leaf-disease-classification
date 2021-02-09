@@ -1,4 +1,4 @@
-from albumentations.augmentations.transforms import RandomCrop, RandomResizedCrop
+from albumentations.augmentations.transforms import RandomCrop, RandomResizedCrop, Resize
 import torch
 import torchvision.transforms as transforms 
 from torch.utils.data import Dataset
@@ -128,6 +128,7 @@ def get_albu_transform(transform, config):
                 ])
 
         test_trans = A.Compose([
+            A.Resize(800, 600),
             A.CenterCrop(config.image_size, config.image_size),
             A.Normalize(
                 mean=[0.485, 0.456, 0.406],
