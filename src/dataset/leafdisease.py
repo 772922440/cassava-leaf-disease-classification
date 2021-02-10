@@ -58,6 +58,7 @@ def get_albu_transform(transform, config):
                 A.Compose([
                     A.RandomRotate90(p=0.5),
                     A.Flip(p=0.5),
+                    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.5),
                     A.RandomResizedCrop(width=config.image_size, height=config.image_size, scale=(0.2, 1.0), p=0.5),
                     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
                 ], p=config.p),
