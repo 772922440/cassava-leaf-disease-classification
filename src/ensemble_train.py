@@ -251,7 +251,10 @@ def main(local_rank=0, world_size=1):
     config.batch_size //= config.accumulated_gradient
 
     # init model
-    model = get_backbone(config.backbone, config).to(device=config.device)
+    if config.deit:
+        model = torch.hub.load('facebookresearch/deit:main', 'deit_base_patch16_384', pretrained=True).to(device=config.device)
+    else:
+        model = get_backbone(config.backbone, config).to(device=config.device)
 
     if config.DDP:
         print(f"Use DPP, GPU {torch.cuda.current_device()} Starts...")
@@ -375,7 +378,8 @@ def main(local_rank=0, world_size=1):
 
             if config.always_save:
                 torch.save(model.state_dict(), join(model_save_path, f'epoch{epoch+1}.pth'))
-
+            if config.always_save and config.save_filename:
+                torch.save(model.state_dict(), join(model_save_path, f'{config.save_filename}_epoch{epoch+1}.pth'))    
 
     if local_rank == 0:
         # print final log

@@ -36,6 +36,7 @@ amp: False
 apex: False
 f1_score: False
 
+deit: False
 cutmix: False
 cutmix_prob: 0.3
 beta: 1.0

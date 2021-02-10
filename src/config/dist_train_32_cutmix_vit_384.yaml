@@ -20,7 +20,7 @@ t1: 0.6
 t2: 1.8
 # criterion: LabelSmoothing
 smoothing: 0.2
-addclf: True
+
 image_size: 384
 
 # scheduler: GradualWarmupScheduler
