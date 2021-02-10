@@ -104,7 +104,7 @@ def get_albu_transform(transform, config):
                 ])
     elif transform == "strong_fix3": 
         train_trans =  A.Compose([
-                A.Resize(800, 600),
+                A.Resize(600, 800),
                 A.Transpose(p=0.5),
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.5),
@@ -129,8 +129,7 @@ def get_albu_transform(transform, config):
                 ])
 
         test_trans = A.Compose([
-            A.Resize(800, 600),
-            A.CenterCrop(config.image_size, config.image_size),
+            A.Resize(config.image_size, config.image_size),
             A.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225],
