@@ -15,6 +15,7 @@ print_freq: 100
 model_suffix: '_cutmix'
 
 transform: "strong_fix3"
+p: 0.8
 criterion: TaylorCrossEntropyLoss
 # t1: 0.6
 # t2: 1.8
