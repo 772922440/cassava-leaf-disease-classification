@@ -41,6 +41,7 @@ fi
 
 echo "SEED:" $seed
 echo "GPU LIST:" "${gpus[@]}"
+echo "ARG LIST:" "${args[@]}"
 echo "THREADS:" $threads
 echo "K_FLODS:" $k_flods
 
@@ -50,8 +51,8 @@ python3 ensemble_split.py name=mobilenetv3_large_100 seed="$seed" k_folds_csv=kf
 # run parallel
 for((i=0;i<k_flods;i++)); do
     gpu=${gpus[$((i % len_gpu))]}  
-    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py seed="$seed"\
-        name=mobilenetv3_large_100 k_folds_csv=kfold5_"$seed".csv k="$i" model_suffix="$seed" "${args[@]}" &
+    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py name=mobilenetv3_large_100 k="$i"\
+         seed="$seed" k_folds_csv=kfold5_"$seed".csv model_suffix="$seed" "${args[@]}" &
 
     if [ $(((i+1) % threads)) -eq 0 ]; then
         wait
