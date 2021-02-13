@@ -46,12 +46,12 @@ echo "THREADS:" $threads
 echo "K_FLODS:" $k_flods
 
 # split csv
-python3 ensemble_split.py name=mobilenetv3_large_100 seed="$seed" k_folds_csv=kfold5_"$seed".csv
+python3 ensemble_split.py name=mobilenet_v3_100 seed="$seed" k_folds_csv=kfold5_"$seed".csv
 
 # run parallel
 for((i=0;i<k_flods;i++)); do
     gpu=${gpus[$((i % len_gpu))]}  
-    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py name=mobilenetv3_large_100 k="$i"\
+    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py name=mobilenet_v3_100 k="$i"\
          seed="$seed" k_folds_csv=kfold5_"$seed".csv model_suffix="$seed" "${args[@]}" &
 
     if [ $(((i+1) % threads)) -eq 0 ]; then
