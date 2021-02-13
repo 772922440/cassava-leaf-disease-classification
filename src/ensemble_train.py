@@ -244,7 +244,7 @@ def main(local_rank=0, world_size=1):
         return 1
 
     # output dir
-    model_save_path = join(config.model_base_path, config.backbone + config.model_suffix)
+    model_save_path = join(config.model_base_path, config.backbone + str(config.model_suffix))
     utils.mkdir(model_save_path)
 
     # init dist
