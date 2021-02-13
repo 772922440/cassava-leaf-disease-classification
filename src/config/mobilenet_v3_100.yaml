@@ -2,9 +2,9 @@
 k_folds: 5
 data_base_path: "../data2"
 seed: 42
-k_folds_csv: "kfold5_42.csv"
+k_folds_csv: "5folds2.csv"
 
-backbone: mobilenetv3_large_100
+backbone: tf_mobilenetv3_large_100
 optimizer: AdamW
 batch_size: 32
 accumulated_gradient: 1
@@ -26,12 +26,12 @@ smoothing: 0.2
 # total_epoch: 5
 # after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
-lr: 3e-4
+lr: 2e-4
 min_lr: 1e-5
 
 amp: False
 apex: False
-DDP: True
+DDP: False
 norm_confusion_matrix: True
 num_workers: 8
 

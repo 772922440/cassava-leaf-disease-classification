@@ -8,7 +8,6 @@ from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torch.cuda.amp import autocast, GradScaler
 
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
@@ -24,6 +23,12 @@ try:
     apex_support = True
 except:
     apex_support = False 
+
+try:
+    from torch.cuda.amp import autocast, GradScaler
+    amp_support = True
+except:
+    amp_support = False 
 
 
 try:
