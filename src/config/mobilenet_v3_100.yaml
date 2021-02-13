@@ -33,7 +33,7 @@ amp: False
 apex: False
 DDP: False
 norm_confusion_matrix: True
-num_workers: 8
+num_workers: 6
 
 cutmix: True
 cutmix_prob: 0.5
