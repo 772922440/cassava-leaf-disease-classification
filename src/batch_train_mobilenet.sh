@@ -50,7 +50,7 @@ python3 ensemble_split.py name=mobilenetv3_large_100 seed="$seed" k_folds_csv=kf
 # run parallel
 for((i=0;i<k_flods;i++)); do
     gpu=${gpus[$((i % len_gpu))]}  
-    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py \
+    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py seed="$seed"\
         name=mobilenetv3_large_100 k_folds_csv=kfold5_"$seed".csv k="$i" model_suffix="$seed" "${args[@]}" &
 
     if [ $(((i+1) % threads)) -eq 0 ]; then
