@@ -1,23 +1,41 @@
 # split train.csv
 k_folds: 5
+data_base_path: "../data2"
+k_folds_csv: "5folds2.csv"
+seed: 42
 
 backbone: tf_efficientnet_b4
 optimizer: AdamW
+momentum: 0.9
 batch_size: 32
-image_size: 512
+accumulated_gradient: 2
 epochs: 20
-min_lr: 1e-6
-lr: 1e-3
-weight_decay: 2e-4
+weight_decay: 1e-4
 max_grad_norm: 10
 print_freq: 100
+model_suffix: '_cutmix'
 
-transform: "strong_fix"
-p: 0.9 # for transform
-criterion: LabelSmoothing
-smoothing: 0.05
+transform: "strong_fix3"
+criterion: TaylorCrossEntropyLoss
+# t1: 0.6
+# t2: 1.8
+# criterion: LabelSmoothing
+smoothing: 0.2
+
+# scheduler: GradualWarmupScheduler
+# total_epoch: 5
+# after_scheduler: CosineAnnealingLR
 scheduler: CosineAnnealingLR
+lr: 2e-4
+min_lr: 5e-6
+
 amp: False
 apex: False
-data_parallel: False
-data_parallel_gpus: 4,5,6,7
+DDP: True
+norm_confusion_matrix: True
+num_workers: 8
+
+cutmix: True
+cutmix_prob: 0.5
+
+always_save: False
