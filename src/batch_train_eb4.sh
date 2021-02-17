@@ -23,16 +23,14 @@ if [ ! $seed ]; then
   exit 1
 fi
 
-gpus=(${gpus//,/ })
 args=(${args//,/ })
 
 if [ ! $gpus ]; then
-  gpus=(0)
+  gpus="0"
 fi
-len_gpu=${#gpus[@]}
 
 if [ ! $threads ]; then
-  threads=$len_gpu
+  threads=1
 fi
 
 if [ ! $k_flods ]; then
@@ -50,8 +48,7 @@ python3 ensemble_split.py name=efficientnet_b4_train seed="$seed" k_folds_csv=kf
 
 # run parallel
 for((i=0;i<k_flods;i++)); do
-    gpu=${gpus[$((i % len_gpu))]}  
-    CUDA_VISIBLE_DEVICES="$gpu" python3 ensemble_train.py name=efficientnet_b4_train k="$i"\
+    CUDA_VISIBLE_DEVICES="$gpus" python3 ensemble_train.py name=efficientnet_b4_train k="$i"\
          seed="$seed" k_folds_csv=kfold5_"$seed".csv model_suffix="$seed" "${args[@]}" &
 
     if [ $(((i+1) % threads)) -eq 0 ]; then
