@@ -8,8 +8,6 @@ __pycache__
 data/*
 *.jpg
 *.csv
-*.pth
-*.txt
 models/*
 # ./Ranger-Deep-Learning-Optimizer/*
 ./PyTorch-Encoding/*

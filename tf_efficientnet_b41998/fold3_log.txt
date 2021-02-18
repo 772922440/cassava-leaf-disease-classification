@@ -1,0 +1,8 @@
+{'data_base_path': '../data2', 'train_csv': 'train.csv', 'train_images': 'train_images', 'test_csv': 'sample_submission.csv', 'test_images': 'test_images', 'target_col': 'label', 'model_base_path': '../models/', 'model_suffix': 1998, 'target_size': 5, 'image_size': 512, 'seed': 1998, 'num_workers': 8, 'accumulated_gradient': 1, 'forward_features': False, 'addclf': False, 'distance_loss': False, 'k_folds': 5, 'k_folds_csv': 'kfold5_1998.csv', 'DDP': False, 'port': 12345, 'amp': False, 'apex': False, 'f1_score': False, 'deit': False, 'cutmix': True, 'cutmix_prob': 0.5, 'beta': 1.0, 'backbone': 'tf_efficientnet_b4', 'optimizer': 'AdamW', 'momentum': 0.9, 'batch_size': 32, 'epochs': 20, 'weight_decay': 0.0001, 'max_grad_norm': 10, 'print_freq': 100, 'transform': 'strong_fix3', 'criterion': 'TaylorCrossEntropyLoss', 'smoothing': 0.2, 'scheduler': 'CosineAnnealingLR', 'lr': 0.0002, 'min_lr': 5e-06, 'norm_confusion_matrix': True, 'always_save': False, 'name': 'efficientnet_b4_train', 'k': 3, 'device': device(type='cuda'), 'T_max': 20}
+Best Epoch: 14, Train Score 0.8822:, Best Score: 0.8915
+Best Epoch: 14, Train F1 Score 0.8804:, Best F1 Score: 0.8906
+[[0.70723684 0.10197368 0.02302632 0.06907895 0.09868421]
+ [0.04273504 0.86609687 0.01424501 0.04131054 0.03561254]
+ [0.02276423 0.03089431 0.77560976 0.1300813  0.04065041]
+ [0.00320513 0.00544872 0.01282051 0.97083333 0.00769231]
+ [0.11764706 0.06747405 0.03979239 0.06055363 0.71453287]]
