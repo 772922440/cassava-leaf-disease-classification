@@ -11,12 +11,19 @@ https://www.kaggle.com/c/cassava-leaf-disease-classification/overview
 - The Data2 is from the data in cassava leaf disease classification 2020
 
 ## Method
-### Ensemble Model
-- We use tf_efficientnet_b4 and resnext50_32x4d to ensemble
-### optimizer
-- We use a lot of optimizer like SGD, Adam, AdamW, AdamP... The result shows that Adam and SGD is the best two.   
-### Data Aug
-- See in the src/
+- Ensemble Model
+  --  We use tf_efficientnet_b4 and resnext50_32x4d to ensemble
+- Optimizer
+  -- We use a lot of optimizer like SGD, Adam, AdamW, AdamP... The result shows that Adam and SGD is the best two.   
+- Data Aug
+  -- See in the src/
 
-### In summary
+## In summary
 - Using Ensemble and Data augmentation is the key.
+
+## How to run the code?
+```
+git clone <this repository>
+cd src/
+see the detail in src/
+```
