@@ -29,8 +29,9 @@ see the Readme.md in src/
 ```
 
 Reference:
-PyTorch-Encoding:
+```
+- PyTorch-Encoding:
 https://github.com/zhanghang1989/PyTorch-Encoding
-
-Ranger-Deep-Learning-Optimizer:
+- Ranger-Deep-Learning-Optimizer:
 https://github.com/lessw2020/Ranger-Deep-Learning-Optimizer
+```
