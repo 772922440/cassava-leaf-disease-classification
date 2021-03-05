@@ -14,7 +14,7 @@ https://www.kaggle.com/c/cassava-leaf-disease-classification/overview
 - Ensemble Model
   --  We use tf_efficientnet_b4 and resnext50_32x4d to ensemble
 - Optimizer
-  -- We use a lot of optimizer like SGD, Adam, AdamW, AdamP... The result shows that Adam and SGD is the best two.   
+  -- We use a lot of optimizer like SGD, Adam, AdamW, AdamP, Ranger... The result shows that Adam and SGD is the best two.   
 - Data Aug
   -- See in the src/
 
@@ -27,3 +27,9 @@ git clone <this repository>
 cd src/
 see the Readme.md in src/
 ```
+
+Reference:
+PyTorch-Encoding:
+https://github.com/zhanghang1989/PyTorch-Encoding
+Ranger-Deep-Learning-Optimizer:
+https://github.com/lessw2020/Ranger-Deep-Learning-Optimizer
