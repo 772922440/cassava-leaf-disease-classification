@@ -25,5 +25,5 @@ https://www.kaggle.com/c/cassava-leaf-disease-classification/overview
 ```
 git clone <this repository>
 cd src/
-see the detail in src/
+see the Readme.md in src/
 ```
